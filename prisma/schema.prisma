@@ -1,0 +1,1079 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================================================
+// ENUMS
+// ==================================================
+
+enum UserRole {
+  TEACHER
+  MODERATOR
+  STUDENT
+  GUARDIAN
+}
+
+enum EnrollmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WAITLISTED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  COMPLETED
+  OVERDUE
+  REFUNDED
+  FAILED
+}
+
+enum PaymentMethod {
+  ONLINE
+  MANUAL
+  INSTALLMENT
+  SCHOLARSHIP
+}
+
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum ExamStatus {
+  DRAFT
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  RESULT_PUBLISHED
+  ARCHIVED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum NotificationType {
+  CLASS_REMINDER
+  EXAM_UPDATE
+  PAYMENT_REMINDER
+  RESULT_ANNOUNCEMENT
+  ATTENDANCE_ALERT
+  GENERAL_ANNOUNCEMENT
+  DUE_ALERT
+  BATCH_UPDATE
+}
+
+enum NotificationChannel {
+  INAPP
+  EMAIL
+  SMS
+  WHATSAPP
+}
+
+enum BatchMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+// ==================================================
+// CORE MODELS
+// ==================================================
+
+// User Model (Base for all roles)
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  password       String // Hashed password
+  phone          String    @unique
+  alternatePhone String?
+  role           UserRole  @default(STUDENT)
+  isActive       Boolean   @default(true)
+  emailVerified  Boolean   @default(false)
+  phoneVerified  Boolean   @default(false)
+  lastLogin      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations based on role (optional)
+  teacher   Teacher?
+  moderator Moderator?
+  student   Student?
+  guardian  Guardian?
+
+  // Notifications
+  notifications           Notification[]
+  notificationPreferences NotificationPreference[]
+
+  // Sessions
+  sessions Session[]
+
+  // Audit logs
+  auditLogs AuditLog[]
+  otps      OTP[]
+}
+
+// Teacher Profile
+model Teacher {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Personal Info
+  name          String
+  bio           String?
+  qualification String?
+  expertise     String[] // Subjects they teach
+  profileImage  String?
+
+  // Professional
+  institute  String?
+  experience Int? // Years of experience
+
+  // Business
+  gstNumber   String?
+  panNumber   String?
+  bankDetails Json? // Store encrypted bank details
+
+  // Settings
+  settings Json? // Teacher preferences
+
+  // Relations
+  batches Batch[]  @relation("TeacherBatches")
+  courses Course[] @relation("TeacherCourses")
+  exams   Exam[]   @relation("TeacherExams")
+  quizzes Quiz[]   @relation("TeacherQuizzes")
+  notes   Note[]   @relation("TeacherNotes")
+  blogs   Blog[]   @relation("TeacherBlogs")
+
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  teacherSubscriptions TeacherSubscription[]
+}
+
+// Moderator Profile
+model Moderator {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  assignedBy  String // Teacher ID who assigned them
+  permissions Json // Granular permissions
+
+  // Assigned batches
+  batches Batch[] @relation("ModeratorBatches")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Student Profile
+model Student {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Personal Info
+  name         String
+  dateOfBirth  DateTime?
+  gender       Gender?
+  address      String?
+  city         String?
+  state        String?
+  pincode      String?
+  profileImage String?
+
+  // Academic
+  institute          String?
+  hscYear            Int? // Year of HSC exam
+  group              String? // Science, Commerce, Arts
+  rollNumber         String?
+  registrationNumber String?
+
+  // Guardian
+  guardianId String?
+  guardian   Guardian? @relation("StudentGuardian", fields: [guardianId], references: [id])
+
+  // Relations
+  enrollments Enrollment[]
+  attendances Attendance[]
+  quizResults QuizResult[]
+  examResults ExamResult[]
+  payments    Payment[]
+  notes       Note[] // Downloaded notes
+  wishlist    Batch[]      @relation("StudentWishlist")
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  quizAttempts      QuizAttempt[]
+  studentProgresses StudentProgress[]
+}
+
+// Guardian Profile
+model Guardian {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name         String
+  relationship String // Father, Mother, etc.
+  occupation   String?
+
+  // Relations
+  students Student[] @relation("StudentGuardian")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==================================================
+// BATCH MANAGEMENT
+// ==================================================
+
+// Course (Parent of Batches)
+model Course {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+  subject     String
+  category    String // Science, Commerce, Arts
+  thumbnail   String?
+
+  teacherId String
+  teacher   Teacher @relation("TeacherCourses", fields: [teacherId], references: [id])
+
+  batches   Batch[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Batch Model
+model Batch {
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  // Basic Info
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
+
+  teacherId String
+  teacher   Teacher @relation("TeacherBatches", fields: [teacherId], references: [id])
+
+  moderators Moderator[] @relation("ModeratorBatches")
+
+  // Batch Details
+  subject     String
+  description String?
+  mode        BatchMode @default(ONLINE)
+
+  // Capacity
+  maxStudents        Int?
+  currentEnrollments Int  @default(0)
+  waitlistCount      Int  @default(0)
+
+  // Schedule
+  startDate DateTime
+  endDate   DateTime?
+  schedule  Json? // Weekly schedule {monday: "10:00-12:00", ...}
+
+  // Live Class
+  liveClassLink     String?
+  liveClassPlatform String? // Zoom, Google Meet, etc.
+  meetingId         String?
+  meetingPassword   String?
+
+  // Pricing
+  price         Float
+  offerPrice    Float?
+  offerDeadline DateTime?
+
+  // Early Bird
+  earlyBirdPrice    Float?
+  earlyBirdDeadline DateTime?
+
+  // Discounts
+  discountPercent Float?
+  discountCode    String?
+
+  // Status
+  isActive       Boolean @default(true)
+  isPublished    Boolean @default(false)
+  enrollmentOpen Boolean @default(true)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  enrollments   Enrollment[]
+  notes         Note[]
+  quizzes       Quiz[]
+  exams         Exam[]
+  attendances   Attendance[]
+  announcements Announcement[]
+
+  // Wishlisted by students
+  wishlistedBy      Student[]         @relation("StudentWishlist")
+  studentProgresses StudentProgress[]
+}
+
+// Enrollment
+model Enrollment {
+  id String @id @default(cuid())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  batchId String
+  batch   Batch  @relation(fields: [batchId], references: [id])
+
+  status EnrollmentStatus @default(PENDING)
+
+  // Enrollment Details
+  appliedAt      DateTime  @default(now())
+  approvedAt     DateTime?
+  rejectedAt     DateTime?
+  rejectedReason String?
+
+  // Payment
+  paymentStatus PaymentStatus @default(PENDING)
+  totalFees     Float
+  paidAmount    Float         @default(0)
+  dueAmount     Float         @default(0)
+
+  // Discount
+  couponCode        String?
+  discountAmount    Float   @default(0)
+  scholarshipAmount Float   @default(0)
+
+  // Installments
+  installmentPlan Json? // {total: 3, paid: 1, nextDue: date, amount: 5000}
+
+  // Metadata
+  metadata Json?
+
+  payments  Payment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([studentId, batchId])
+}
+
+// ==================================================
+// PAYMENT SYSTEM
+// ==================================================
+
+model Payment {
+  id String @id @default(cuid())
+
+  enrollmentId String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  // Payment Details
+  amount     Float
+  paidAmount Float
+  dueAmount  Float?
+
+  method PaymentMethod
+  status PaymentStatus @default(PENDING)
+
+  // Transaction
+  transactionId   String? @unique
+  paymentGateway  String? // SSLCommerz, bKash, Nagad, etc.
+  gatewayResponse Json? // Store raw gateway response
+
+  // Manual Payment
+  manualReference String? // Bank slip number, bKash TrxID
+  verifiedBy      String? // Teacher/Moderator ID
+  verifiedAt      DateTime?
+
+  // Dates
+  paymentDate DateTime  @default(now())
+  dueDate     DateTime?
+
+  // Receipt
+  receiptUrl    String?
+  invoiceNumber String? @unique
+
+  // Reminders
+  remindersSent    Int       @default(0)
+  lastReminderSent DateTime?
+
+  notes    String?
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==================================================
+// LEARNING MATERIALS
+// ==================================================
+
+model Note {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  description String?
+
+  // Content
+  content  String? // Rich text
+  fileUrl  String? // PDF, PPT, etc.
+  fileType String? // pdf, video, slide
+  fileSize Int? // in bytes
+  duration Int? // for videos (seconds)
+
+  // Relations
+  teacherId String
+  teacher   Teacher @relation("TeacherNotes", fields: [teacherId], references: [id])
+
+  batchId String?
+  batch   Batch?  @relation(fields: [batchId], references: [id])
+
+  subject String
+  topic   String?
+
+  // Access
+  isPublic  Boolean @default(false)
+  isPremium Boolean @default(false)
+  price     Float? // if premium
+
+  // Stats
+  downloads Int @default(0)
+  views     Int @default(0)
+
+  // Tags
+  tags String[]
+
+  // Downloads tracking
+  downloadedBy Student[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==================================================
+// QUIZ SYSTEM
+// ==================================================
+
+model Quiz {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+
+  teacherId String
+  teacher   Teacher @relation("TeacherQuizzes", fields: [teacherId], references: [id])
+
+  batchId String?
+  batch   Batch?  @relation(fields: [batchId], references: [id])
+
+  // Quiz Settings
+  timeLimit    Int? // in minutes
+  totalMarks   Int
+  passingMarks Int?
+
+  questions Question[]
+
+  // Schedule
+  startTime DateTime?
+  endTime   DateTime?
+  isActive  Boolean    @default(false)
+  status    QuizStatus @default(DRAFT)
+
+  // Results
+  showResult      Boolean @default(true)
+  showAnswer      Boolean @default(false)
+  showLeaderboard Boolean @default(true)
+
+  // Attempts
+  maxAttempts Int           @default(1)
+  attempts    QuizAttempt[]
+
+  // Metadata
+  difficulty DifficultyLevel @default(INTERMEDIATE)
+  subject    String?
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  quizResults QuizResult[]
+}
+
+model Question {
+  id     String @id @default(cuid())
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  text          String
+  type          String // MCQ, TRUE_FALSE, SHORT_ANSWER
+  options       Json? // For MCQ: ["Option A", "Option B", ...]
+  correctAnswer Json // For MCQ: index or value
+  explanation   String?
+
+  marks         Int   @default(1)
+  negativeMarks Float @default(0)
+
+  order Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuizAttempt {
+  id String @id @default(cuid())
+
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id])
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  // Attempt Details
+  startTime DateTime  @default(now())
+  endTime   DateTime?
+
+  answers    Json? // Store student answers
+  score      Int?
+  percentage Float?
+  isPassed   Boolean?
+
+  // Auto-graded
+  autoGraded Boolean @default(true)
+
+  // Status
+  isCompleted Boolean @default(false)
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  quizResult QuizResult?
+}
+
+model QuizResult {
+  id String @id @default(cuid())
+
+  attemptId String      @unique
+  attempt   QuizAttempt @relation(fields: [attemptId], references: [id])
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id])
+
+  // Results
+  totalMarks        Int
+  obtainedMarks     Float
+  percentage        Float
+  rank              Int?
+  totalParticipants Int
+
+  // Analysis
+  weakTopics   String[] // Topics where student scored low
+  strongTopics String[] // Topics where student scored high
+
+  // Feedback
+  feedback String?
+
+  createdAt DateTime @default(now())
+}
+
+// ==================================================
+// EXAM MANAGEMENT
+// ==================================================
+
+model Exam {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+
+  teacherId String
+  teacher   Teacher @relation("TeacherExams", fields: [teacherId], references: [id])
+
+  batchId String?
+  batch   Batch?  @relation(fields: [batchId], references: [id])
+
+  // Exam Details
+  type      String // Weekly, Monthly, Model Test, Final
+  subject   String
+  fullMarks Int
+  passMarks Int?
+
+  // Schedule
+  examDate  DateTime
+  startTime DateTime
+  endTime   DateTime
+  duration  Int // in minutes
+
+  // Grading
+  gradingType       String // AUTO, MANUAL, HYBRID
+  isResultPublished Boolean @default(false)
+
+  // Questions
+  questionPaper String? // PDF URL
+  answerSheet   String? // PDF URL
+
+  // Results
+  results ExamResult[]
+
+  // Status
+  status ExamStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExamResult {
+  id String @id @default(cuid())
+
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id])
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  // Marks
+  obtainedMarks Float
+  totalMarks    Int
+  percentage    Float
+
+  // Details
+  grade    String?
+  rank     Int?
+  position String? // 1st, 2nd, 3rd, etc.
+
+  // Subject-wise marks
+  subjectWiseMarks Json? // {"physics": 75, "math": 80}
+
+  // Answer Script
+  answerScript String? // PDF URL
+
+  // Teacher Feedback
+  feedback String?
+  gradedBy String? // Teacher/Moderator ID
+  gradedAt DateTime?
+
+  // Guardian
+  sentToGuardian Boolean   @default(false)
+  guardianSentAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([examId, studentId])
+}
+
+// ==================================================
+// ATTENDANCE
+// ==================================================
+
+model Attendance {
+  id String @id @default(cuid())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  batchId String
+  batch   Batch  @relation(fields: [batchId], references: [id])
+
+  date   DateTime         @default(now())
+  status AttendanceStatus
+
+  // Details
+  checkInTime  DateTime?
+  checkOutTime DateTime?
+  duration     Int? // in minutes
+
+  // For online classes
+  ipAddress  String?
+  deviceInfo String?
+
+  // Marked by
+  markedBy String? // Teacher/Moderator ID
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, batchId, date])
+}
+
+// ==================================================
+// NOTIFICATION SYSTEM
+// ==================================================
+
+model Notification {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    NotificationType
+  channel NotificationChannel @default(INAPP)
+
+  title   String
+  message String
+  data    Json? // Additional data
+
+  // Status
+  isRead Boolean   @default(false)
+  readAt DateTime?
+
+  // Delivery
+  isDelivered   Boolean   @default(false)
+  deliveredAt   DateTime?
+  deliveryError String?
+
+  // Schedule
+  scheduledFor DateTime?
+  sentAt       DateTime?
+
+  createdAt DateTime @default(now())
+}
+
+model NotificationPreference {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Preferences per channel
+  emailEnabled    Boolean @default(true)
+  smsEnabled      Boolean @default(true)
+  whatsappEnabled Boolean @default(false)
+  inappEnabled    Boolean @default(true)
+
+  // Preferences per type
+  preferences Json // {"PAYMENT_REMINDER": true, "EXAM_UPDATE": false}
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId])
+}
+
+// ==================================================
+// BLOG SYSTEM
+// ==================================================
+
+model Blog {
+  id      String  @id @default(cuid())
+  title   String
+  slug    String  @unique
+  excerpt String?
+  content String // Rich text
+
+  teacherId String
+  teacher   Teacher @relation("TeacherBlogs", fields: [teacherId], references: [id])
+
+  // Media
+  featuredImage String?
+  thumbnail     String?
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String[]
+
+  // Stats
+  views  Int @default(0)
+  likes  Int @default(0)
+  shares Int @default(0)
+
+  // Status
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+
+  // Categories
+  categories String[] // ["HSC Tips", "Exam Strategy", etc.]
+  tags       String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==================================================
+// IMPORTANT NOTICES
+// ==================================================
+
+model Announcement {
+  id      String @id @default(cuid())
+  title   String
+  content String
+
+  batchId String?
+  batch   Batch?  @relation(fields: [batchId], references: [id])
+
+  // Target
+  targetRole UserRole? // If null, send to all batch members
+
+  // Priority
+  isUrgent Boolean @default(false)
+  isPinned Boolean @default(false)
+
+  // Expiry
+  expiresAt DateTime?
+
+  // Stats
+  views Int @default(0)
+
+  createdBy String // Teacher/Moderator ID
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==================================================
+// ANALYTICS & TRACKING
+// ==================================================
+
+model StudentProgress {
+  id String @id @default(cuid())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  batchId String
+  batch   Batch  @relation(fields: [batchId], references: [id])
+
+  // Performance metrics
+  avgQuizScore Float?
+  avgExamScore Float?
+  attendance   Float? // Percentage
+
+  // Weak areas
+  weakSubjects String[]
+  weakTopics   String[]
+
+  // Improvement
+  improvementRate Float? // Percentage improvement over time
+
+  // Last activity
+  lastActive DateTime?
+
+  // Predictions
+  predictedHSCScore Int?
+  confidenceScore   Float? // 0-1
+
+  // Metadata
+  metadata Json?
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, batchId])
+}
+
+// ==================================================
+// SYSTEM & SECURITY
+// ==================================================
+
+model Session {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token        String  @unique
+  refreshToken String? @unique
+
+  ipAddress String?
+  device    String?
+  browser   String?
+  os        String?
+  location  String?
+
+  isActive   Boolean   @default(true)
+  expiresAt  DateTime
+  lastUsedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  action   String
+  entity   String // "User", "Batch", "Payment", etc.
+  entityId String?
+
+  changes  Json? // Before/after values
+  metadata Json?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+}
+
+// ==================================================
+// COUPONS & OFFERS
+// ==================================================
+
+model Coupon {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  description String?
+
+  // Discount
+  discountType  String // PERCENTAGE, FIXED
+  discountValue Float
+
+  // Validity
+  validFrom  DateTime
+  validUntil DateTime
+  maxUses    Int?
+  usedCount  Int      @default(0)
+
+  // Restrictions
+  minPurchase       Float?
+  maxDiscount       Float?
+  applicableBatches String[] // Batch IDs
+
+  // Per user
+  perUserLimit Int @default(1)
+
+  // Status
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OTP {
+  id     String  @id @default(cuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  email String?
+  phone String?
+
+  code    String
+  purpose String // LOGIN, VERIFY, RESET_PASSWORD
+
+  isUsed    Boolean  @default(false)
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+}
+
+model SubscriptionPlan {
+  id           String @id @default(cuid())
+  name         String
+  price        Float
+  durationDays Int
+
+  maxStudents Int?
+  maxBatches  Int?
+
+  features Json
+
+  isActive Boolean @default(true)
+
+  createdAt            DateTime              @default(now())
+  teacherSubscriptions TeacherSubscription[]
+}
+
+model TeacherSubscription {
+  id String @id @default(cuid())
+
+  teacherId String
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+
+  planId String
+  plan   SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  startDate DateTime
+  endDate   DateTime
+
+  isActive Boolean @default(true)
+
+  paymentId String?
+  metadata  Json?
+
+  createdAt DateTime @default(now())
+}
+
+model Lead {
+  id    String  @id @default(cuid())
+  name  String?
+  phone String?
+  email String?
+
+  source   String? // Facebook, Website, WhatsApp
+  interest String? // Subject or batch
+
+  converted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+model Referral {
+  id String @id @default(cuid())
+
+  referrerId String
+  referredId String?
+
+  reward Float?
+
+  status String // pending, paid
+
+  createdAt DateTime @default(now())
+}
+
+// ==================================================
+// INDEXES FOR PERFORMANCE
+// ==================================================
+
+// Note: Add these indexes in your migrations for optimal performance
+
+/**
+ * - User: email, phone, role
+ * - Batch: teacherId, courseId, isActive, enrollmentOpen
+ * - Enrollment: studentId, batchId, status
+ * - Payment: studentId, enrollmentId, status, dueDate
+ * - Attendance: studentId, batchId, date
+ * - QuizResult: studentId, quizId
+ * - ExamResult: studentId, examId
+ * - Notification: userId, isRead, createdAt
+ */
