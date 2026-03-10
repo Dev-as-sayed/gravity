@@ -357,30 +357,6 @@ export default function FAQ() {
             </div>
           )}
         </div>
-
-        {/* Still have questions? */}
-        <div className="text-center mt-16">
-          <div className="relative inline-block">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-3xl blur-2xl opacity-30" />
-            <div className="relative bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12">
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                Still have questions?
-              </h3>
-              <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                Can't find the answer you're looking for? Our support team is
-                here to help.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="group px-8 py-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105">
-                  Contact Support
-                </button>
-                <button className="group px-8 py-3 border border-white/20 rounded-xl font-semibold text-white hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-                  Visit Help Center
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <style jsx>{`
