@@ -1,6 +1,10 @@
 // app/contact/page.tsx
 
 import ContactHero from "@/components/section/Contact/ContactHero";
+import MapSection from "@/components/section/Contact/MapSection";
+import QuickContact from "@/components/section/Contact/QuickContact";
+import SocialMedia from "@/components/section/Contact/SocialMedia";
+import FAQ from "@/components/section/Home/FAQ";
 
 export default function ContactPage() {
   return (
@@ -11,7 +15,10 @@ export default function ContactPage() {
         description="Have questions about our physics courses? Want to enroll or need assistance? Our team is here to help you every step of the way."
         category="general"
       />
-      {/* Rest of your contact page content */}
+      <QuickContact />
+      <MapSection />
+      <SocialMedia />
+      <FAQ />
     </main>
   );
 }
