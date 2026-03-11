@@ -303,8 +303,15 @@ model User {
   otps          OTP[]
   deviceTokens  DeviceToken[]
   userActivity  UserActivity[]
-  supportTickets SupportTicket[]      @relation("UserTickets")
-  assignedTickets SupportTicket[]     @relation("AssignedTickets")
+  
+  // Support tickets
+  supportTickets      SupportTicket[] @relation("UserTickets")
+  assignedTickets     SupportTicket[] @relation("AssignedTickets")
+  ticketMessages      TicketMessage[] @relation("TicketSender")
+
+  // Referrals
+  referralsMade       Referral[]      @relation("Referrer")
+  referralsReceived   Referral[]      @relation("Referred")
 
   @@index([email])
   @@index([phone])
@@ -313,7 +320,10 @@ model User {
 }
 
 // Teacher Profile
-model Teacher {
+// ==================================================
+// TEACHER MODEL - Add missing comments relation
+// ==================================================
+ model Teacher {
   id     String @id @default(cuid())
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -341,7 +351,7 @@ model Teacher {
   gstNumber   String?
   panNumber   String?
   bankDetails Json? // Store encrypted bank details
- upiId       String?
+  upiId       String?
 
   // Settings
   settings Json? // Teacher preferences
@@ -360,26 +370,38 @@ model Teacher {
   totalBatches     Int @default(0)
   totalReviews     Int @default(0)
 
-  // Relations
-  batches          Batch[]           @relation("TeacherBatches")
-  courses          Course[]          @relation("TeacherCourses")
-  exams            Exam[]            @relation("TeacherExams")
-  quizzes          Quiz[]            @relation("TeacherQuizzes")
-  notes            Note[]            @relation("TeacherNotes")
-  blogs            Blog[]            @relation("TeacherBlogs")
-  posts            Post[]            @relation("TeacherPosts")
-  doubts           Doubt[]           @relation("TeacherDoubts")
-  assignments      Assignment[]      @relation("TeacherAssignments")
-  reviews          TeacherReview[]
-  certificates     Certificate[]     @relation("TeacherCertificates")
-  liveSessions     LiveSession[]     @relation("TeacherSessions")
-  announcements    Announcement[]    @relation("TeacherAnnouncements")
+  // Post related relations
+  postReactions        PostReaction[]        @relation("TeacherPostReactions")
+  commentReactions     CommentReaction[]     @relation("TeacherCommentReactions")
+  postBookmarks        PostBookmark[]        @relation("TeacherPostBookmarks")
+  pollVotes            PollVote[]            @relation("TeacherPollVotes")
+  postViews            PostView[]            @relation("TeacherPostViews")
+  postShares           PostShare[]           @relation("TeacherPostShares")
+  postCollections      PostCollection[]      @relation("TeacherPostCollections")
+  
+  // Comments relation - FIXED: removed fields and references
+  comments             Comment[]             // This creates the one-to-many relation with Comment.teacher
+  
+  // Existing relations
+  batches              Batch[]               @relation("TeacherBatches")
+  courses              Course[]              @relation("TeacherCourses")
+  exams                Exam[]                @relation("TeacherExams")
+  quizzes              Quiz[]                @relation("TeacherQuizzes")
+  notes                Note[]                @relation("TeacherNotes")
+  blogs                Blog[]                @relation("TeacherBlogs")
+  posts                Post[]                @relation("TeacherPosts")
+  doubts               Doubt[]               @relation("TeacherDoubts")
+  doubtAnswers         DoubtAnswer[]         @relation("TeacherDoubtAnswers")
+  assignments          Assignment[]          @relation("TeacherAssignments")
+  reviews              TeacherReview[]
+  certificates         Certificate[]         @relation("TeacherCertificates")
+  liveSessions         LiveSession[]         @relation("TeacherSessions")
+  announcements        Announcement[]        @relation("TeacherAnnouncements")
 
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   teacherSubscriptions TeacherSubscription[]
 }
-
 // Moderator Profile
 model Moderator {
   id     String @id @default(cuid())
@@ -472,14 +494,19 @@ model Student {
   wishlist         Batch[]           @relation("StudentWishlist")
   posts            Post[]            @relation("StudentPosts")
   comments         Comment[]         @relation("StudentComments")
-  reactions        PostReaction[]    @relation("StudentReactions")
-  bookmarks        PostBookmark[]
   doubts           Doubt[]           @relation("StudentDoubts")
+  doubtAnswers     DoubtAnswer[]     @relation("StudentDoubtAnswers")
   submissions      AssignmentSubmission[]
-  certificates     Certificate[]     @relation("StudentCertificates")
   reviews          TeacherReview[]
-  liveSessions     LiveSession[]     @relation("StudentSessions")
-  pollVotes        PollVote[]
+  batchReviews     BatchReview[]
+  liveSessionAttendance LiveSessionAttendance[] @relation("StudentSessionAttendance")
+  postShares       PostShare[]       @relation("StudentPostShares")
+  postReactions        PostReaction[]        @relation("StudentReactions")
+  commentReactions     CommentReaction[]     @relation("StudentCommentReactions")
+  postBookmarks        PostBookmark[]        @relation("StudentBookmarks")
+  pollVotes            PollVote[]            @relation("StudentPollVotes")
+  postViews            PostView[]            @relation("StudentPostViews")
+  postCollections      PostCollection[]      @relation("StudentCollections")
 
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -499,7 +526,16 @@ model Guardian {
   income       Float?
 
   // Relations
-  students Student[] @relation("StudentGuardian")
+  students         Student[] @relation("StudentGuardian")
+
+  postReactions        PostReaction[]        @relation("GuardianReactions")
+  commentReactions     CommentReaction[]     @relation("GuardianCommentReactions")
+  postBookmarks        PostBookmark[]        @relation("GuardianBookmarks")
+  pollVotes            PollVote[]            @relation("GuardianPollVotes")
+  postViews            PostView[]            @relation("GuardianPostViews")
+  postShares           PostShare[]           @relation("GuardianPostShares")
+  postCollections      PostCollection[]      @relation("GuardianCollections")
+  comments             Comment[]             @relation("GuardianComments")
 
   // Preferences
   notificationPrefs Json? // How they want to be notified about student progress
@@ -549,7 +585,10 @@ model Course {
   metaDescription String?
   metaKeywords    String[]
 
+  // Relations
   batches   Batch[]
+  posts     Post[] @relation("CoursePosts")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -646,6 +685,7 @@ model Batch {
   doubts           Doubt[]
   materials        BatchMaterial[]
   reviews          BatchReview[]
+  posts            Post[]            @relation("BatchPosts")
 
   // Wishlisted by students
   wishlistedBy      Student[]         @relation("StudentWishlist")
@@ -759,7 +799,7 @@ model BatchReview {
   batchId   String
   batch     Batch  @relation(fields: [batchId], references: [id])
   studentId String
-  student   Student @relation(fields: [studentId], references: [id])
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   rating     Int // 1-5
   comment    String?
@@ -909,7 +949,9 @@ model Note {
 
   // Downloads tracking
   downloadedBy Student[]
-  savedBy      PostBookmark[]
+  
+  // Fixed savedBy relation
+  savedBy      PostBookmark[] @relation("SavedNotes")
 
   // SEO
   metaTitle       String?
@@ -924,6 +966,7 @@ model Note {
   @@index([subject])
   @@index([isPublic])
 }
+
 
 // ==================================================
 // QUIZ SYSTEM
@@ -1090,15 +1133,67 @@ model QuizResult {
   feedback String?
   recommendations String[] // Suggested topics to review
 
-  // Certificate
+  // Certificate - FIXED with fields and references
   certificateId String?
-  certificate   Certificate?
+  certificate   Certificate? @relation("QuizResultCertificate", fields: [certificateId], references: [id])
 
   createdAt DateTime @default(now())
 
   @@index([studentId])
   @@index([quizId])
 }
+
+model Certificate {
+  id          String @id @default(cuid())
+  certificateNumber String @unique
+
+  // Type
+  type        CertificateType
+  title       String
+  description String?
+
+  // Recipient
+  studentId   String
+
+  // Issuer
+  teacherId   String?
+  teacher     Teacher? @relation("TeacherCertificates", fields: [teacherId], references: [id])
+  batchId     String?
+  quizId      String?
+  examId      String?
+
+  // Details
+  issueDate   DateTime @default(now())
+  expiryDate  DateTime?
+  grade       String?
+  score       Float?
+  duration    String? // Course duration
+
+  // File
+  pdfUrl      String?
+  imageUrl    String?
+  metadata    Json?
+
+  // Verification
+  isVerified  Boolean @default(true)
+  verifiedBy  String?
+  verifiedAt  DateTime?
+
+  // Sharing
+  shareableLink String? @unique
+  viewCount     Int @default(0)
+
+  // Relations - FIXED with proper field references
+  quizResults   QuizResult[] @relation("QuizResultCertificate")
+  examResults   ExamResult[] @relation("ExamResultCertificate")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([certificateNumber])
+}
+
 
 // ==================================================
 // EXAM MANAGEMENT
@@ -1214,9 +1309,9 @@ model ExamResult {
   sentToGuardian Boolean   @default(false)
   guardianSentAt DateTime?
 
-  // Certificate
+  // Certificate - FIXED with fields and references
   certificateId String?
-  certificate   Certificate?
+  certificate   Certificate? @relation("ExamResultCertificate", fields: [certificateId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1225,7 +1320,6 @@ model ExamResult {
   @@index([studentId])
   @@index([rank])
 }
-
 // ==================================================
 // ATTENDANCE
 // ==================================================
@@ -1327,7 +1421,7 @@ model LiveSessionAttendance {
   sessionId    String
   session      LiveSession @relation(fields: [sessionId], references: [id])
   studentId    String
-  student      Student     @relation("StudentSessions", fields: [studentId], references: [id])
+  student      Student     @relation("StudentSessionAttendance", fields: [studentId], references: [id])
 
   joinedAt     DateTime?
   leftAt       DateTime?
@@ -1463,6 +1557,7 @@ model Doubt {
   // Assignment
   assignedTo String? // Teacher ID
   assignedAt DateTime?
+  teacher    Teacher? @relation("TeacherDoubts", fields: [assignedTo], references: [id])
 
   // Resolution
   answers    DoubtAnswer[]
@@ -1496,9 +1591,9 @@ model DoubtAnswer {
 
   // Author (Teacher or Student)
   teacherId String?
-  teacher   Teacher? @relation("TeacherDoubts", fields: [teacherId], references: [id])
+  teacher   Teacher? @relation("TeacherDoubtAnswers", fields: [teacherId], references: [id])
   studentId String?
-  student   Student? @relation(fields: [studentId], references: [id])
+  student   Student? @relation("StudentDoubtAnswers", fields: [studentId], references: [id])
 
   // Content
   content  String
@@ -1519,58 +1614,7 @@ model DoubtAnswer {
   @@index([doubtId])
 }
 
-// ==================================================
-// CERTIFICATES
-// ==================================================
 
-model Certificate {
-  id          String @id @default(cuid())
-  certificateNumber String @unique
-
-  // Type
-  type        CertificateType
-  title       String
-  description String?
-
-  // Recipient
-  studentId   String
-  student     Student @relation("StudentCertificates", fields: [studentId], references: [id])
-
-  // Issuer
-  teacherId   String?
-  teacher     Teacher? @relation("TeacherCertificates", fields: [teacherId], references: [id])
-  batchId     String?
-  batch       Batch?   @relation(fields: [batchId], references: [id])
-  quizId      String?
-  examId      String?
-
-  // Details
-  issueDate   DateTime @default(now())
-  expiryDate  DateTime?
-  grade       String?
-  score       Float?
-  duration    String? // Course duration
-
-  // File
-  pdfUrl      String?
-  imageUrl    String?
-  metadata    Json?
-
-  // Verification
-  isVerified  Boolean @default(true)
-  verifiedBy  String?
-  verifiedAt  DateTime?
-
-  // Sharing
-  shareableLink String? @unique
-  viewCount     Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([studentId])
-  @@index([certificateNumber])
-}
 
 // ==================================================
 // NOTIFICATION SYSTEM
@@ -1668,10 +1712,10 @@ model Post {
 
   // If post is related to specific batch/course
   batchId        String?
-  batch          Batch?         @relation(fields: [batchId], references: [id])
+  batch          Batch?         @relation("BatchPosts", fields: [batchId], references: [id])
   
   courseId       String?
-  course         Course?        @relation(fields: [courseId], references: [id])
+  course         Course?        @relation("CoursePosts", fields: [courseId], references: [id])
 
   // Media Attachments
   media          MediaAttachment[]
@@ -1695,6 +1739,8 @@ model Post {
   reactions      PostReaction[]
   comments       Comment[]
   bookmarks      PostBookmark[]
+  postViews      PostView[]     @relation("ViewedPosts")
+  postShares     PostShare[]    @relation("SharedPosts")
 
   // Tags
   tags           String[]
@@ -1774,13 +1820,13 @@ model PostReaction {
 
   // User who reacted
   teacherId      String?
-  teacher        Teacher?       @relation(fields: [teacherId], references: [id])
+  teacher        Teacher?       @relation("TeacherPostReactions", fields: [teacherId], references: [id])
   
   studentId      String?
   student        Student?       @relation("StudentReactions", fields: [studentId], references: [id])
 
   guardianId     String?
-  guardian       Guardian?      @relation(fields: [guardianId], references: [id])
+  guardian       Guardian?      @relation("GuardianReactions", fields: [guardianId], references: [id])
 
   type           ReactionType   @default(LIKE)
 
@@ -1792,6 +1838,7 @@ model PostReaction {
 }
 
 // Comments
+
 model Comment {
   id             String         @id @default(cuid())
   content        String         // Comment text
@@ -1805,13 +1852,13 @@ model Comment {
 
   // Author
   teacherId      String?
-  teacher        Teacher?       @relation(fields: [teacherId], references: [id])
+  teacher        Teacher?       @relation(fields: [teacherId], references: [id])  // This links to Teacher.comments
   
   studentId      String?
   student        Student?       @relation("StudentComments", fields: [studentId], references: [id])
 
   guardianId     String?
-  guardian       Guardian?      @relation(fields: [guardianId], references: [id])
+  guardian       Guardian?      @relation("GuardianComments", fields: [guardianId], references: [id])
 
   // Media in comment
   mediaUrl       String?
@@ -1858,13 +1905,13 @@ model CommentReaction {
 
   // User who reacted
   teacherId      String?
-  teacher        Teacher?       @relation(fields: [teacherId], references: [id])
+  teacher        Teacher?       @relation("TeacherCommentReactions", fields: [teacherId], references: [id])
   
   studentId      String?
-  student        Student?       @relation(fields: [studentId], references: [id])
+  student        Student?       @relation("StudentCommentReactions", fields: [studentId], references: [id])
 
   guardianId     String?
-  guardian       Guardian?      @relation(fields: [guardianId], references: [id])
+  guardian       Guardian?      @relation("GuardianCommentReactions", fields: [guardianId], references: [id])
 
   type           ReactionType   @default(LIKE)
 
@@ -1881,19 +1928,23 @@ model PostBookmark {
 
   // User who bookmarked
   studentId      String?
-  student        Student?       @relation(fields: [studentId], references: [id])
+  student        Student?       @relation("StudentBookmarks", fields: [studentId], references: [id])
   
   teacherId      String?
-  teacher        Teacher?       @relation(fields: [teacherId], references: [id])
+  teacher        Teacher?       @relation("TeacherPostBookmarks", fields: [teacherId], references: [id])
 
   guardianId     String?
-  guardian       Guardian?      @relation(fields: [guardianId], references: [id])
+  guardian       Guardian?      @relation("GuardianBookmarks", fields: [guardianId], references: [id])
 
   // Folders/Collections
   collectionId   String?
   collection     PostCollection? @relation(fields: [collectionId], references: [id])
   
   notes          String?        // Personal notes on this post
+  
+  // Fixed Note relation - Added fields and references
+  noteId         String?
+  note           Note?          @relation("SavedNotes", fields: [noteId], references: [id])
 
   createdAt      DateTime       @default(now())
 
@@ -1935,13 +1986,13 @@ model PollVote {
 
   // Voter
   studentId      String?
-  student        Student?       @relation(fields: [studentId], references: [id])
+  student        Student?       @relation("StudentPollVotes", fields: [studentId], references: [id])
   
   teacherId      String?
-  teacher        Teacher?       @relation(fields: [teacherId], references: [id])
+  teacher        Teacher?       @relation("TeacherPollVotes", fields: [teacherId], references: [id])
 
   guardianId     String?
-  guardian       Guardian?      @relation(fields: [guardianId], references: [id])
+  guardian       Guardian?      @relation("GuardianPollVotes", fields: [guardianId], references: [id])
 
   // Selected options (array for multiple choice)
   selectedOptions String[]      // ["1", "3"]
@@ -1955,6 +2006,7 @@ model PollVote {
 }
 
 // Post Collections/Folders
+
 model PostCollection {
   id             String         @id @default(cuid())
   name           String
@@ -1963,13 +2015,13 @@ model PostCollection {
 
   // Owner
   studentId      String?
-  student        Student?       @relation(fields: [studentId], references: [id])
+  student        Student?       @relation("StudentCollections", fields: [studentId], references: [id])
   
   teacherId      String?
-  teacher        Teacher?       @relation(fields: [teacherId], references: [id])
+  teacher        Teacher?       @relation("TeacherPostCollections", fields: [teacherId], references: [id])
 
   guardianId     String?
-  guardian       Guardian?      @relation(fields: [guardianId], references: [id])
+  guardian       Guardian?      @relation("GuardianCollections", fields: [guardianId], references: [id])
 
   // Collection items
   bookmarks      PostBookmark[]
@@ -1991,17 +2043,17 @@ model PostCollection {
 model PostView {
   id             String         @id @default(cuid())
   postId         String
-  post           Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post           Post           @relation("ViewedPosts", fields: [postId], references: [id], onDelete: Cascade)
 
   // Viewer
   studentId      String?
-  student        Student?       @relation(fields: [studentId], references: [id])
+  student        Student?       @relation("StudentPostViews", fields: [studentId], references: [id])
   
   teacherId      String?
-  teacher        Teacher?       @relation(fields: [teacherId], references: [id])
+  teacher        Teacher?       @relation("TeacherPostViews", fields: [teacherId], references: [id])
 
   guardianId     String?
-  guardian       Guardian?      @relation(fields: [guardianId], references: [id])
+  guardian       Guardian?      @relation("GuardianPostViews", fields: [guardianId], references: [id])
 
   // Anonymous view tracking
   sessionId      String?        // For non-logged in users
@@ -2019,17 +2071,17 @@ model PostView {
 model PostShare {
   id             String         @id @default(cuid())
   postId         String
-  post           Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post           Post           @relation("SharedPosts", fields: [postId], references: [id], onDelete: Cascade)
 
   // Sharer
   studentId      String?
-  student        Student?       @relation(fields: [studentId], references: [id])
+  student        Student?       @relation("StudentPostShares", fields: [studentId], references: [id])
   
   teacherId      String?
-  teacher        Teacher?       @relation(fields: [teacherId], references: [id])
+  teacher        Teacher?       @relation("TeacherPostShares", fields: [teacherId], references: [id])
 
   guardianId     String?
-  guardian       Guardian?      @relation(fields: [guardianId], references: [id])
+  guardian       Guardian?      @relation("GuardianPostShares", fields: [guardianId], references: [id])
 
   // Share details
   platform       String?        // "facebook", "whatsapp", "copy_link", etc.
@@ -2285,7 +2337,7 @@ model TicketMessage {
   ticket     SupportTicket @relation(fields: [ticketId], references: [id])
 
   senderId   String
-  sender     User   @relation(fields: [senderId], references: [id])
+  sender     User   @relation("TicketSender", fields: [senderId], references: [id])
 
   message    String
   attachments Json?
@@ -2560,26 +2612,21 @@ model SystemConfig {
   updatedAt DateTime @updatedAt
 }
 
-// ==================================================
-// IMPORTANT INDEXES FOR PERFORMANCE
-// ==================================================
 
-/**
- * Create these indexes in your migrations for optimal performance:
- * 
- * User: email, phone, role, createdAt
- * Batch: teacherId, courseId, isActive, startDate
- * Enrollment: studentId, batchId, status
- * Payment: studentId, enrollmentId, status, dueDate
- * Attendance: studentId, batchId, date
- * QuizResult: studentId, quizId
- * ExamResult: studentId, examId, rank
- * Notification: userId, isRead, createdAt
- * Post: teacherId, batchId, status, createdAt, isFeatured
- * Comment: postId, parentId, createdAt
- * PostReaction: postId, type
- * Doubt: studentId, status, assignedTo
- * Session: userId, token
- * AuditLog: userId, createdAt, entity
- * Lead: status, assignedTo, createdAt
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
