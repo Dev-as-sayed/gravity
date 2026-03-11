@@ -1,0 +1,51 @@
+// types/next-auth.d.ts
+import "next-auth";
+import "next-auth/jwt";
+
+declare module "next-auth" {
+  interface User {
+    id: string;
+    email: string;
+    name?: string | null;
+    role: string;
+    phone?: string | null;
+    profileImage?: string | null;
+    teacherId?: string | null;
+    studentId?: string | null;
+    guardianId?: string | null;
+    moderatorId?: string | null;
+    adminId?: string | null;
+  }
+
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      name?: string | null;
+      role: string;
+      phone?: string | null;
+      profileImage?: string | null;
+      teacherId?: string | null;
+      studentId?: string | null;
+      guardianId?: string | null;
+      moderatorId?: string | null;
+      adminId?: string | null;
+    };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    email: string;
+    name?: string | null;
+    role: string;
+    phone?: string | null;
+    profileImage?: string | null;
+    teacherId?: string | null;
+    studentId?: string | null;
+    guardianId?: string | null;
+    moderatorId?: string | null;
+    adminId?: string | null;
+  }
+}

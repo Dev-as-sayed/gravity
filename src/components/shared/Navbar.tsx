@@ -93,12 +93,20 @@ export default function Navbar() {
             </div>
 
             {/* Optional: Add a CTA button */}
-            <Link
-              href="/enroll"
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
-            >
-              Enroll Now
-            </Link>
+            <div className="flex items-center space-x-2">
+              <Link
+                href="/enroll"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                Enroll Now
+              </Link>
+              <Link
+                href="/auth/login"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                Login
+              </Link>
+            </div>
           </div>
         </div>
       </nav>

@@ -261,17 +261,14 @@ model User {
   // Profile
   name               String?
   profileImage       String?
-  coverImage         String?
   bio                String?
   dateOfBirth        DateTime?
   gender             Gender?
   address            String?
   city               String?
   state              String?
-  country            String?
   pincode            String?
-  timezone           String?  @default("Asia/Kolkata")
-  language           String?  @default("en")
+ 
 
   // Security
   twoFactorEnabled   Boolean   @default(false)
@@ -323,6 +320,8 @@ model User {
 // ==================================================
 // TEACHER MODEL - Add missing comments relation
 // ==================================================
+
+
  model Teacher {
   id     String @id @default(cuid())
   userId String @unique
@@ -431,7 +430,7 @@ model Admin {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   name          String
-  role          String // SUPER_ADMIN, CONTENT_ADMIN, FINANCE_ADMIN, SUPPORT_ADMIN
+  role          String 
   permissions   Json
   department    String?
   lastActive    DateTime?
