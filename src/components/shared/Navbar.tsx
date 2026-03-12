@@ -112,7 +112,7 @@ export default function Navbar() {
                 <>
                   {/* Dashboard Button */}
                   <Link
-                    href={getDashboardPath()}
+                    href={getDashboardPath}
                     className="px-4 py-2 bg-primary/10 text-primary rounded-md text-sm font-medium hover:bg-primary/20 transition-colors flex items-center gap-2"
                   >
                     <LayoutDashboard className="w-4 h-4" />
@@ -148,7 +148,7 @@ export default function Navbar() {
                           Profile
                         </Link>
                         <Link
-                          href={getDashboardPath()}
+                          href={getDashboardPath}
                           className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors lg:hidden"
                           onClick={() => setShowUserMenu(false)}
                         >
@@ -217,7 +217,7 @@ export default function Navbar() {
           {/* Conditional button based on auth status */}
           {isAuthenticated ? (
             <Link
-              href={getDashboardPath()}
+              href={getDashboardPath}
               className="flex flex-col items-center py-2 px-3 rounded-lg text-primary hover:text-primary/80 transition-colors relative"
             >
               <LayoutDashboard className="w-5 h-5" />
@@ -321,7 +321,7 @@ export default function Navbar() {
             {/* Dashboard link for mobile menu */}
             {isAuthenticated && (
               <Link
-                href={getDashboardPath()}
+                href={getDashboardPath}
                 onClick={() => setIsOpen(false)}
                 className="flex items-center space-x-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200 mt-2 border-t border-border pt-4"
               >
@@ -366,7 +366,7 @@ export default function Navbar() {
           {/* Mobile top bar right section */}
           {isAuthenticated ? (
             <Link
-              href={getDashboardPath()}
+              href={getDashboardPath}
               className="p-2 rounded-lg bg-primary/10 text-primary"
             >
               <LayoutDashboard className="w-5 h-5" />
