@@ -61,7 +61,7 @@ const DashboardNav = ({
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 py-4">
+      <nav className="flex-1 overflow-y-auto no-scrollbar py-4">
         <ul className="space-y-1 px-2">
           {navItems.map((item) => {
             const Icon = item.icon;

@@ -255,3 +255,14 @@ html {
 .delay-1000 {
   animation-delay: 1000ms;
 }
+
+/* Hide scrollbar but allow scrolling */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

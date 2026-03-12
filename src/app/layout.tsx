@@ -5,6 +5,7 @@ import Navbar from "@/components/shared/Navbar";
 import { SessionProvider } from "next-auth/react";
 import Providers from "@/providers/SerrionProvider";
 import ReduxProvider from "@/providers/ReduxProvider";
+import LayoutWrapper from "@/providers/LayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,8 +34,7 @@ export default function RootLayout({
       >
         <Providers>
           <ReduxProvider>
-            <Navbar />
-            {children}
+            <LayoutWrapper>{children}</LayoutWrapper>
           </ReduxProvider>
         </Providers>
       </body>

@@ -1,4 +1,3 @@
-// src/components/dashboard/RootDashboardLayout.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,18 +19,14 @@ const RootDashboardLayout = ({ children }: RootDashboardLayoutProps) => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => setMounted(true), []);
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/login");
     }
   }, [status, router]);
 
-  // Handle responsive behavior
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -43,7 +38,6 @@ const RootDashboardLayout = ({ children }: RootDashboardLayoutProps) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Close mobile nav when route changes
   useEffect(() => {
     setIsMobileNavOpen(false);
   }, [pathname]);
@@ -58,7 +52,7 @@ const RootDashboardLayout = ({ children }: RootDashboardLayoutProps) => {
 
   if (!mounted || status === "loading") {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-400">Loading dashboard...</p>
@@ -70,8 +64,8 @@ const RootDashboardLayout = ({ children }: RootDashboardLayoutProps) => {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen bg-gray-950">
-      {/* Mobile Navigation Overlay */}
+    <div className="h-screen bg-gray-950 flex overflow-hidden">
+      {/* Mobile Overlay */}
       {isMobileNavOpen && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
@@ -79,37 +73,39 @@ const RootDashboardLayout = ({ children }: RootDashboardLayoutProps) => {
         />
       )}
 
-      {/* Sidebar Navigation */}
+      {/* Sidebar */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out
+          fixed inset-y-0 left-0 z-50 transition-all duration-300
           ${isMobileNavOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0 lg:static lg:z-auto
+          lg:translate-x-0
         `}
       >
-        <DashboardNav
-          isCollapsed={isNavCollapsed}
-          onToggle={handleNavToggle}
-          onClose={() => setIsMobileNavOpen(false)}
-        />
+        <div className="h-screen overflow-hidden">
+          <DashboardNav
+            isCollapsed={isNavCollapsed}
+            onToggle={handleNavToggle}
+            onClose={() => setIsMobileNavOpen(false)}
+          />
+        </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Content Area */}
       <div
         className={`
-          transition-all duration-300 min-h-screen
+          flex flex-col flex-1 transition-all duration-300
           ${isNavCollapsed ? "lg:ml-20" : "lg:ml-64"}
         `}
       >
-        {/* Top Bar */}
+        {/* Topbar */}
         <DashboardTopBar
           onMenuClick={handleNavToggle}
           isNavCollapsed={isNavCollapsed}
           isMobileOpen={isMobileNavOpen}
         />
 
-        {/* Page Content */}
-        <main className="pt-16 min-h-screen bg-gradient-to-b from-gray-950 to-gray-900">
+        {/* Scrollable Content */}
+        <main className="flex-1 overflow-y-auto pt-16 bg-gradient-to-b from-gray-950 to-gray-900">
           <div className="p-4 md:p-6 lg:p-8">{children}</div>
         </main>
       </div>

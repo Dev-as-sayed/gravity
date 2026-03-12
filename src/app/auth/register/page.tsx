@@ -13,6 +13,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { useRegisterMutation } from "@/store/features/authApi";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -44,6 +45,8 @@ export default function RegisterPage() {
     relationship: "",
   });
 
+  const [register, { isLoading }] = useRegisterMutation();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
@@ -58,32 +61,22 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
-      setLoading(false);
       return;
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const res: any = await register(formData);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Registration failed");
+      if (res.error) {
+        setError(res.error.data?.error || "Registration failed");
+      } else {
+        router.push("/auth/login?registered=true");
       }
-
-      router.push("/auth/login?registered=true");
-    } catch (error: any) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
+    } catch {
+      setError("Something went wrong");
     }
   };
 
