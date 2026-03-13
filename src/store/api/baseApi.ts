@@ -8,7 +8,7 @@ export const baseApi = createApi({
     credentials: "include",
   }),
 
-  tagTypes: ["User"],
+  tagTypes: ["User", "Teacher", "TeacherStats"],
 
   endpoints: () => ({}),
 });

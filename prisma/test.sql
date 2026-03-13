@@ -46,15 +46,25 @@ INSERT INTO public."Teacher" (
 -- INSERT STUDENT PROFILES
 -- ==================================================
 
+-- First, verify the existing User IDs
+-- Run this query to see what User IDs actually exist:
+-- SELECT id, email, role FROM public."User";
+
+-- Then use the correct User IDs in your Student INSERT:
+
+
+-- Run this query to see all users and their IDs
+SELECT id, email, role FROM public."User" WHERE role = 'STUDENT';
+
+
 INSERT INTO public."Student" (
     id, "userId", name, "dateOfBirth", gender, address, city, state, pincode,
     institute, "educationLevel", class, board, "hscYear", "guardianId",
     "preferredSubjects", "learningGoals", "examTargets", "createdAt", "updatedAt"
 ) VALUES
-
 (
-    'cm7jv6k8k0018xjrcso65x1r1', 
-    'cm7jv6k8k0006xjrcso65x1qp', 
+    'student_rohan_001', 
+    'cm7jv6k8k0007xjrcso65x1qq',  -- This should match an existing User ID
     'Rohan Kumar', 
     '2005-04-15', 
     'MALE', 
@@ -67,17 +77,16 @@ INSERT INTO public."Student" (
     '12', 
     'CBSE', 
     2024, 
-    'cm7jv6k8k0013xjrcso65x1qw',
+    NULL,  -- Set guardianId to NULL initially, update later if needed
     ARRAY['Physics', 'Mathematics'], 
     ARRAY['IIT JEE Advanced', 'Research in Physics'], 
     ARRAY['JEE Advanced', 'IIT JAM'], 
     CURRENT_TIMESTAMP, 
     CURRENT_TIMESTAMP
 ),
-
 (
-    'cm7jv6k8k0019xjrcso65x1r2', 
-    'cm7jv6k8k0007xjrcso65x1qq', 
+    'student_ishita_002', 
+    'cm7jv6k8k0008xjrcso65x1qr',  -- This should match an existing User ID
     'Ishita Patel', 
     '2006-08-22', 
     'FEMALE', 
@@ -90,7 +99,7 @@ INSERT INTO public."Student" (
     '11', 
     'CBSE', 
     2025, 
-    'cm7jv6k8k0012xjrcso65x1qv',
+    NULL,
     ARRAY['Physics', 'Chemistry'], 
     ARRAY['NEET', 'Medical Entrance'], 
     ARRAY['NEET', 'AIIMS'], 
@@ -98,8 +107,8 @@ INSERT INTO public."Student" (
     CURRENT_TIMESTAMP
 ),
 (
-    'cm7jv6k8k0020xjrcso65x1r3', 
-    'cm7jv6k8k0008xjrcso65x1qr', 
+    'student_aditya_003', 
+    'cm7jv6k8k0009xjrcso65x1qs',  -- This should match an existing User ID
     'Aditya Singh', 
     '2005-11-03', 
     'MALE', 
@@ -119,10 +128,9 @@ INSERT INTO public."Student" (
     CURRENT_TIMESTAMP, 
     CURRENT_TIMESTAMP
 ),
-
 (
-    'cm7jv6k8k0021xjrcso65x1r4', 
-    'cm7jv6k8k0009xjrcso65x1qs', 
+    'student_ananya_004', 
+    'cm7jv6k8k0010xjrcso65x1qt',  -- This should match an existing User ID
     'Ananya Desai', 
     '2006-02-18', 
     'FEMALE', 
@@ -142,10 +150,9 @@ INSERT INTO public."Student" (
     CURRENT_TIMESTAMP, 
     CURRENT_TIMESTAMP
 ),
-
 (
-    'cm7jv6k8k0022xjrcso65x1r5', 
-    'cm7jv6k8k0010xjrcso65x1qt', 
+    'student_vikram_005', 
+    'cm7jv6k8k0011xjrcso65x1qu',  -- This should match an existing User ID
     'Vikram Singh', 
     '2005-07-09', 
     'MALE', 
@@ -164,30 +171,9 @@ INSERT INTO public."Student" (
     ARRAY['JEE Main', 'JEE Advanced', 'BITSAT'], 
     CURRENT_TIMESTAMP, 
     CURRENT_TIMESTAMP
-),
-
-(
-    'cm7jv6k8k0023xjrcso65x1r6', 
-    'cm7jv6k8k0011xjrcso65x1qu', 
-    'Sneha Reddy', 
-    '2006-05-12', 
-    'FEMALE', 
-    '987 Student Complex', 
-    'Hyderabad', 
-    'Telangana', 
-    '500001', 
-    'Hyderabad Public School', 
-    'High School', 
-    '11', 
-    'CBSE', 
-    2025, 
-    NULL,
-    ARRAY['Physics', 'Chemistry'], 
-    ARRAY['NEET', 'Medical College'], 
-    ARRAY['NEET', 'AIIMS', 'JIPMER'], 
-    CURRENT_TIMESTAMP, 
-    CURRENT_TIMESTAMP
 );
+
+
 -- ==================================================
 -- INSERT GUARDIAN PROFILES
 -- ==================================================
@@ -214,6 +200,16 @@ FROM public."User";
 -- ==================================================
 -- INSERT COURSES
 -- ==================================================
+
+-- Run this query to see all users and their IDs
+-- Check all teachers with their User IDs and Teacher IDs
+SELECT 
+    t.id as teacher_id,
+    t.name as teacher_name,
+    u.id as user_id,
+    u.email
+FROM public."Teacher" t
+JOIN public."User" u ON t."userId" = u.id;
 INSERT INTO public."Course" (
     id, title, slug, description, subject, category, thumbnail, "teacherId", duration, level, price, "isFree", "createdAt", "updatedAt"
 ) VALUES
@@ -228,10 +224,10 @@ INSERT INTO public."Course" (
 INSERT INTO public."Batch" (
     id, name, slug, "courseId", "teacherId", subject, description, mode, "maxStudents", "currentEnrollments", "startDate", "endDate", price, "isActive", "isPublished", "enrollmentOpen", "createdAt", "updatedAt"
 ) VALUES
-('cm7jv6k8k0030xjrcso65x1rd', 'Quantum Physics Batch - 2024', 'quantum-batch-2024', 'cm7jv6k8k0026xjrcso65x1r9', 'cm7jv6k8k0014xjrcso65x1qx', 'Quantum Physics', 'Intensive course on Quantum Mechanics', 'ONLINE', 50, 12, '2024-06-01 00:00:00', '2024-08-30 00:00:00', 4999.00, true, true, true, NOW(), NOW()),
-('cm7jv6k8k0031xjrcso65x1re', 'Electromagnetism Advanced', 'em-advanced-2024', 'cm7jv6k8k0027xjrcso65x1ra', 'cm7jv6k8k0015xjrcso65x1qy', 'Electromagnetism', 'Deep dive into Maxwell''s equations', 'ONLINE', 40, 8, '2024-06-15 00:00:00', '2024-09-15 00:00:00', 5999.00, true, true, true, NOW(), NOW()),
-('cm7jv6k8k0032xjrcso65x1rf', 'Relativity Crash Course', 'relativity-crash-2024', 'cm7jv6k8k0028xjrcso65x1rb', 'cm7jv6k8k0016xjrcso65x1qz', 'Relativity', 'Special and General Relativity', 'HYBRID', 30, 5, '2024-07-01 00:00:00', '2024-08-15 00:00:00', 6999.00, true, true, true, NOW(), NOW()),
-('cm7jv6k8k0033xjrcso65x1rg', 'Classical Mechanics Foundation', 'mechanics-foundation-2024', 'cm7jv6k8k0029xjrcso65x1rc', 'cm7jv6k8k0017xjrcso65x1r0', 'Mechanics', 'Fundamentals of Classical Mechanics', 'OFFLINE', 25, 3, '2024-05-15 00:00:00', '2024-07-15 00:00:00', 3999.00, true, true, true, NOW(), NOW());
+('cm7jv6k8k0030xjrcso65x1rd', 'Quantum Physics Batch - 2024', 'quantum-batch-2024', 'cm7jv6k8k0029xjrcso65x1rc', 'cm7jv6k8k0017xjrcso65x1r0', 'Quantum Physics', 'Intensive course on Quantum Mechanics', 'ONLINE', 50, 12, '2024-06-01 00:00:00', '2024-08-30 00:00:00', 4999.00, true, true, true, NOW(), NOW()),
+('cm7jv6k8k0031xjrcso65x1re', 'Electromagnetism Advanced', 'em-advanced-2024', 'cm7jv6k8k0028xjrcso65x1rb', 'cm7jv6k8k0016xjrcso65x1qz', 'Electromagnetism', 'Deep dive into Maxwell''s equations', 'ONLINE', 40, 8, '2024-06-15 00:00:00', '2024-09-15 00:00:00', 5999.00, true, true, true, NOW(), NOW()),
+('cm7jv6k8k0032xjrcso65x1rf', 'Relativity Crash Course', 'relativity-crash-2024', 'cm7jv6k8k0027xjrcso65x1ra', 'cm7jv6k8k0015xjrcso65x1qy', 'Relativity', 'Special and General Relativity', 'HYBRID', 30, 5, '2024-07-01 00:00:00', '2024-08-15 00:00:00', 6999.00, true, true, true, NOW(), NOW()),
+('cm7jv6k8k0033xjrcso65x1rg', 'Classical Mechanics Foundation', 'mechanics-foundation-2024', 'cm7jv6k8k0026xjrcso65x1r9', 'cm7jv6k8k0014xjrcso65x1qx', 'Mechanics', 'Fundamentals of Classical Mechanics', 'OFFLINE', 25, 3, '2024-05-15 00:00:00', '2024-07-15 00:00:00', 3999.00, true, true, true, NOW(), NOW());
 
 -- ==================================================
 -- INSERT ENROLLMENTS
