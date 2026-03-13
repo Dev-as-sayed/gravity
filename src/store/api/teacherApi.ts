@@ -1,12 +1,10 @@
-// src/redux/api/teacherApi.ts
-
+import { baseApi } from "./baseApi";
 import {
   CreateTeacherData,
   Teacher,
   TeacherFilters,
   UpdateTeacherData,
 } from "@/type/teacher";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 interface PaginatedTeacherResponse {
   success: boolean;
@@ -25,20 +23,11 @@ interface ApiResponse<T> {
   data: T;
 }
 
-export const teacherApi = createApi({
-  reducerPath: "teacherApi",
-
-  baseQuery: fetchBaseQuery({
-    baseUrl: "/api",
-    credentials: "include",
-  }),
-
-  tagTypes: ["Teacher", "TeacherStats"],
-
+export const teacherApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // =====================================
+    // ===============================
     // GET ALL TEACHERS
-    // =====================================
+    // ===============================
 
     getTeachers: builder.query<PaginatedTeacherResponse, TeacherFilters>({
       query: (params) => ({
@@ -49,18 +38,18 @@ export const teacherApi = createApi({
       providesTags: ["Teacher"],
     }),
 
-    // =====================================
+    // ===============================
     // GET SINGLE TEACHER
-    // =====================================
+    // ===============================
 
     getTeacher: builder.query<ApiResponse<Teacher>, string>({
       query: (id) => `/teachers/${id}`,
       providesTags: ["Teacher"],
     }),
 
-    // =====================================
+    // ===============================
     // CREATE TEACHER
-    // =====================================
+    // ===============================
 
     createTeacher: builder.mutation<ApiResponse<Teacher>, CreateTeacherData>({
       query: (data) => ({
@@ -72,9 +61,9 @@ export const teacherApi = createApi({
       invalidatesTags: ["Teacher"],
     }),
 
-    // =====================================
+    // ===============================
     // UPDATE TEACHER
-    // =====================================
+    // ===============================
 
     updateTeacher: builder.mutation<
       ApiResponse<Teacher>,
@@ -89,9 +78,9 @@ export const teacherApi = createApi({
       invalidatesTags: ["Teacher"],
     }),
 
-    // =====================================
+    // ===============================
     // ACTIVATE / DEACTIVATE
-    // =====================================
+    // ===============================
 
     toggleTeacherStatus: builder.mutation<
       ApiResponse<any>,
@@ -106,9 +95,9 @@ export const teacherApi = createApi({
       invalidatesTags: ["Teacher"],
     }),
 
-    // =====================================
+    // ===============================
     // DELETE TEACHER
-    // =====================================
+    // ===============================
 
     deleteTeacher: builder.mutation<ApiResponse<any>, string>({
       query: (id) => ({
@@ -119,19 +108,18 @@ export const teacherApi = createApi({
       invalidatesTags: ["Teacher"],
     }),
 
-    // =====================================
+    // ===============================
     // TEACHER STATS
-    // =====================================
+    // ===============================
 
     getTeacherStats: builder.query<any, void>({
       query: () => "/teachers/stats",
-
       providesTags: ["TeacherStats"],
     }),
 
-    // =====================================
+    // ===============================
     // BULK ACTION
-    // =====================================
+    // ===============================
 
     bulkTeacherAction: builder.mutation<
       ApiResponse<any>,
@@ -146,6 +134,8 @@ export const teacherApi = createApi({
       invalidatesTags: ["Teacher"],
     }),
   }),
+
+  overrideExisting: false,
 });
 
 export const {
