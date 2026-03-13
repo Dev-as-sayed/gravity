@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/shared/Navbar";
-import { SessionProvider } from "next-auth/react";
 import Providers from "@/providers/SerrionProvider";
 import ReduxProvider from "@/providers/ReduxProvider";
 import LayoutWrapper from "@/providers/LayoutWrapper";

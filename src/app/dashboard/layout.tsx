@@ -105,7 +105,7 @@ const RootDashboardLayout = ({ children }: RootDashboardLayoutProps) => {
         />
 
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto pt-16 bg-gradient-to-b from-gray-950 to-gray-900">
+        <main className="flex-1 overflow-y-auto no-scrollbar pt-16 bg-gradient-to-b from-gray-950 to-gray-900">
           <div className="p-4 md:p-6 lg:p-8">{children}</div>
         </main>
       </div>
