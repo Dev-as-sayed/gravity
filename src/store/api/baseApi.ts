@@ -15,6 +15,10 @@ export const baseApi = createApi({
     "Student",
     "StudentStats",
     "StudentProgress",
+    "Guardian",
+    "GuardianStats",
+    "GuardianStudents",
+    "GuardianPreferences",
   ],
 
   endpoints: () => ({}),
