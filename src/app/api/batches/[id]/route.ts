@@ -192,19 +192,21 @@ export async function PUT(
       });
     }
 
-    // Check permission if user is teacher
-    if (
-      auth.user?.role === "TEACHER" &&
-      existingBatch.teacherId !== auth.user.teacherId
-    ) {
-      return sendResponse({
-        success: false,
-        message: "You don't have permission to update this batch",
-        status: 403,
-      });
-    }
+    console.log("check point 1");
 
-    // Update batch
+    // Helper function to convert empty strings to null for optional fields
+    const toNumberOrNull = (value: any): number | null => {
+      if (value === undefined || value === null || value === "") return null;
+      const num = Number(value);
+      return isNaN(num) ? null : num;
+    };
+
+    const toDateOrNull = (value: any): Date | null => {
+      if (!value || value === "") return null;
+      return new Date(value);
+    };
+
+    // Update batch with proper type handling
     const batch = await prisma.batch.update({
       where: { id },
       data: {
@@ -213,35 +215,33 @@ export async function PUT(
         description: body.description,
         mode: body.mode,
         language: body.language,
-        maxStudents: body.maxStudents,
-        minimumStudents: body.minimumStudents,
+        maxStudents: toNumberOrNull(body.maxStudents),
+        minimumStudents: toNumberOrNull(body.minimumStudents),
         startDate: body.startDate ? new Date(body.startDate) : undefined,
-        endDate: body.endDate ? new Date(body.endDate) : null,
-        schedule: body.schedule,
-        totalClasses: body.totalClasses,
-        liveClassLink: body.liveClassLink,
-        liveClassPlatform: body.liveClassPlatform,
-        meetingId: body.meetingId,
-        meetingPassword: body.meetingPassword,
-        recordingUrl: body.recordingUrl,
-        studyMaterialUrl: body.studyMaterialUrl,
-        resources: body.resources,
-        price: body.price,
-        offerPrice: body.offerPrice,
-        offerDeadline: body.offerDeadline ? new Date(body.offerDeadline) : null,
-        earlyBirdPrice: body.earlyBirdPrice,
-        earlyBirdDeadline: body.earlyBirdDeadline
-          ? new Date(body.earlyBirdDeadline)
-          : null,
-        discountPercent: body.discountPercent,
-        discountCode: body.discountCode,
+        endDate: toDateOrNull(body.endDate),
+        schedule: body.schedule || undefined,
+        totalClasses: toNumberOrNull(body.totalClasses),
+        liveClassLink: body.liveClassLink || undefined,
+        liveClassPlatform: body.liveClassPlatform || undefined,
+        meetingId: body.meetingId || undefined,
+        meetingPassword: body.meetingPassword || undefined,
+        recordingUrl: body.recordingUrl || undefined,
+        studyMaterialUrl: body.studyMaterialUrl || undefined,
+        resources: body.resources || undefined,
+        price: body.price !== undefined ? Number(body.price) : undefined,
+        offerPrice: toNumberOrNull(body.offerPrice),
+        offerDeadline: toDateOrNull(body.offerDeadline),
+        earlyBirdPrice: toNumberOrNull(body.earlyBirdPrice),
+        earlyBirdDeadline: toDateOrNull(body.earlyBirdDeadline),
+        discountPercent: toNumberOrNull(body.discountPercent),
+        discountCode: body.discountCode || undefined,
         isActive: body.isActive,
-        isPublished: body.isPublished,
+        isPublished: body.isPublished ?? false,
         enrollmentOpen: body.enrollmentOpen,
         visibility: body.visibility,
-        syllabus: body.syllabus,
-        topics: body.topics,
-        prerequisites: body.prerequisites,
+        syllabus: body.syllabus || undefined,
+        topics: body.topics || [],
+        prerequisites: body.prerequisites || [],
       },
     });
 

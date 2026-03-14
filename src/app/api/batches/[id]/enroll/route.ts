@@ -10,12 +10,19 @@ export async function POST(
   { params }: { params: { id: string } },
 ) {
   try {
-    const auth = await authenticate(req, "STUDENT");
+    const auth = await authenticate(
+      req,
+      "STUDENT",
+      "ADMIN",
+      "SUPER_ADMIN",
+      "TEACHER",
+      "MODERATOR",
+    );
 
-    if (!auth.success || !auth.user?.studentId) {
+    if (!auth.success) {
       return sendResponse({
         success: false,
-        message: "Only students can enroll",
+        message: "Authentication required",
         status: 401,
       });
     }
@@ -23,7 +30,7 @@ export async function POST(
     const { id } = params;
     const body = await req.json();
 
-    // Check if batch exists and is open for enrollment
+    // Check if batch exists
     const batch = await prisma.batch.findUnique({
       where: { id },
     });
@@ -36,19 +43,93 @@ export async function POST(
       });
     }
 
-    if (!batch.enrollmentOpen || !batch.isActive) {
-      return sendResponse({
-        success: false,
-        message: "Batch is not open for enrollment",
-        status: 400,
-      });
-    }
+    // Handle different user roles
+    let studentId: string | null = null;
 
-    if (batch.maxStudents && batch.currentEnrollments >= batch.maxStudents) {
+    // If user is a student, use their studentId
+    if (auth.user?.role === "STUDENT") {
+      studentId = auth.user.studentId || null;
+
+      if (!studentId) {
+        return sendResponse({
+          success: false,
+          message: "Student profile not found",
+          status: 400,
+        });
+      }
+
+      // For students, check if batch is open for enrollment
+      if (!batch.enrollmentOpen || !batch.isActive) {
+        return sendResponse({
+          success: false,
+          message: "Batch is not open for enrollment",
+          status: 400,
+        });
+      }
+
+      if (batch.maxStudents && batch.currentEnrollments >= batch.maxStudents) {
+        return sendResponse({
+          success: false,
+          message: "Batch is full",
+          status: 400,
+        });
+      }
+    }
+    // For admins, teachers, moderators - they need to provide a studentId
+    else if (
+      ["ADMIN", "SUPER_ADMIN", "TEACHER", "MODERATOR"].includes(
+        auth.user?.role || "",
+      )
+    ) {
+      studentId = body.studentId;
+
+      if (!studentId) {
+        return sendResponse({
+          success: false,
+          message: "studentId is required in request body",
+          status: 400,
+        });
+      }
+
+      // Verify that the student exists
+      const student = await prisma.student.findUnique({
+        where: { id: studentId },
+      });
+
+      if (!student) {
+        return sendResponse({
+          success: false,
+          message: "Student not found",
+          status: 404,
+        });
+      }
+
+      // Optional: Allow admins to override enrollment rules
+      if (body.forceEnroll !== true) {
+        if (!batch.enrollmentOpen || !batch.isActive) {
+          return sendResponse({
+            success: false,
+            message: "Batch is not open for enrollment",
+            status: 400,
+          });
+        }
+
+        if (
+          batch.maxStudents &&
+          batch.currentEnrollments >= batch.maxStudents
+        ) {
+          return sendResponse({
+            success: false,
+            message: "Batch is full",
+            status: 400,
+          });
+        }
+      }
+    } else {
       return sendResponse({
         success: false,
-        message: "Batch is full",
-        status: 400,
+        message: "Invalid user role for enrollment",
+        status: 403,
       });
     }
 
@@ -56,7 +137,7 @@ export async function POST(
     const existingEnrollment = await prisma.enrollment.findUnique({
       where: {
         studentId_batchId: {
-          studentId: auth.user.studentId,
+          studentId: studentId,
           batchId: id,
         },
       },
@@ -74,13 +155,18 @@ export async function POST(
     const enrollment = await prisma.$transaction(async (tx) => {
       const enrollment = await tx.enrollment.create({
         data: {
-          studentId: !auth.user.studentId,
+          studentId: studentId,
           batchId: id,
           status: body.autoApprove ? "APPROVED" : "PENDING",
           totalFees: batch.price,
-          paidAmount: 0,
-          dueAmount: batch.price,
-          metadata: body.metadata,
+          paidAmount: body.initialPayment || 0,
+          dueAmount: batch.price - (body.initialPayment || 0),
+          metadata: {
+            ...body.metadata,
+            enrolledBy: auth.user?.id,
+            enrolledByRole: auth.user?.role,
+            forceEnroll: body.forceEnroll || false,
+          },
         },
       });
 

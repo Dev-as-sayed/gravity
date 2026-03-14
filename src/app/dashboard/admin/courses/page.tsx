@@ -66,6 +66,8 @@ import {
   useAddBatchReviewMutation,
   useEnrollInBatchMutation,
 } from "@/store/api/batchApi";
+import { useGetTeachersQuery } from "@/store/api/teacherApi";
+import { useGetStudentsQuery } from "@/store/api/studentApi";
 
 // Types
 interface Course {
@@ -1523,6 +1525,7 @@ const BatchModal = ({
   const [form, setForm] = useState({
     name: batch?.name || "",
     courseId: batch?.courseId || "",
+    teacherId: batch?.teacherId || "",
     subject: batch?.subject || "",
     description: batch?.description || "",
     mode: batch?.mode || "ONLINE",
@@ -1537,6 +1540,16 @@ const BatchModal = ({
     visibility: batch?.visibility || "PUBLIC",
     topics: batch?.topics?.join(", ") || "",
   });
+
+  // Fetch teachers for dropdown
+  const { data: teachersData, isLoading: isLoadingTeachers } =
+    useGetTeachersQuery({
+      page: 1,
+      limit: 100,
+      isActive: true,
+    });
+
+  const teachers = teachersData?.data || [];
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -1556,7 +1569,13 @@ const BatchModal = ({
     e.preventDefault();
     onSubmit({
       ...form,
-      maxStudents: form.maxStudents ? parseInt(form.maxStudents) : null,
+      maxStudents: form.maxStudents
+        ? parseInt(form.maxStudents.toString())
+        : null,
+      price: parseFloat(form.price.toString()) || 0,
+      offerPrice: form.offerPrice
+        ? parseFloat(form.offerPrice.toString())
+        : null,
       topics: form.topics
         .split(",")
         .map((t) => t.trim())
@@ -1580,6 +1599,7 @@ const BatchModal = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Batch Name */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Batch Name *
@@ -1591,9 +1611,11 @@ const BatchModal = ({
               onChange={handleChange}
               required
               className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
+              placeholder="e.g., Quantum Physics Batch 2024"
             />
           </div>
 
+          {/* Course and Teacher */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -1617,6 +1639,38 @@ const BatchModal = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
+                Teacher *
+              </label>
+              <select
+                name="teacherId"
+                value={form.teacherId}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
+              >
+                <option value="">Select Teacher</option>
+                {isLoadingTeachers ? (
+                  <option value="" disabled>
+                    Loading teachers...
+                  </option>
+                ) : (
+                  teachers.map((teacher: any) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.name}{" "}
+                      {teacher.qualification
+                        ? `(${teacher.qualification})`
+                        : ""}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+          </div>
+
+          {/* Subject and Mode */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Subject *
               </label>
               <input
@@ -1626,11 +1680,10 @@ const BatchModal = ({
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
+                placeholder="e.g., Physics"
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Mode
@@ -1646,7 +1699,10 @@ const BatchModal = ({
                 <option value="HYBRID">Hybrid</option>
               </select>
             </div>
+          </div>
 
+          {/* Language and Max Students */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Language
@@ -1657,10 +1713,27 @@ const BatchModal = ({
                 value={form.language}
                 onChange={handleChange}
                 className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
+                placeholder="e.g., English"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Max Students
+              </label>
+              <input
+                type="number"
+                name="maxStudents"
+                value={form.maxStudents}
+                onChange={handleChange}
+                min="1"
+                className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
+                placeholder="e.g., 50"
               />
             </div>
           </div>
 
+          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Description
@@ -1671,9 +1744,11 @@ const BatchModal = ({
               onChange={handleChange}
               rows={3}
               className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
+              placeholder="Brief description of the batch..."
             />
           </div>
 
+          {/* Dates */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -1703,35 +1778,22 @@ const BatchModal = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Max Students
-              </label>
-              <input
-                type="number"
-                name="maxStudents"
-                value={form.maxStudents}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Topics (comma separated)
-              </label>
-              <input
-                type="text"
-                name="topics"
-                value={form.topics}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
-                placeholder="Quantum, Mechanics, Waves"
-              />
-            </div>
+          {/* Topics */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Topics (comma separated)
+            </label>
+            <input
+              type="text"
+              name="topics"
+              value={form.topics}
+              onChange={handleChange}
+              className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
+              placeholder="Quantum Mechanics, Wave Function, Schrodinger Equation"
+            />
           </div>
 
+          {/* Pricing */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -1742,32 +1804,39 @@ const BatchModal = ({
                 name="price"
                 value={form.price}
                 onChange={handleChange}
+                min="0"
+                step="0.01"
                 className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
+                placeholder="e.g., 4999"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Offer Price
+                Offer Price (₹)
               </label>
               <input
                 type="number"
                 name="offerPrice"
                 value={form.offerPrice}
                 onChange={handleChange}
+                min="0"
+                step="0.01"
                 className="w-full px-4 py-2 bg-gray-800 border border-white/10 rounded-lg text-white"
+                placeholder="e.g., 3999"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* Status Options */}
+          <div className="flex items-center gap-6">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 name="isActive"
                 checked={form.isActive}
                 onChange={handleChange}
-                className="w-4 h-4"
+                className="w-4 h-4 rounded border-white/10 bg-gray-800 text-blue-500 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-300">Active</span>
             </label>
@@ -1778,30 +1847,66 @@ const BatchModal = ({
                 name="enrollmentOpen"
                 checked={form.enrollmentOpen}
                 onChange={handleChange}
-                className="w-4 h-4"
+                className="w-4 h-4 rounded border-white/10 bg-gray-800 text-blue-500 focus:ring-blue-500"
               />
               <span className="text-sm text-gray-300">Enrollment Open</span>
             </label>
+
+            <label className="flex items-center gap-2">
+              <span className="text-sm text-gray-300">Visibility:</span>
+              <select
+                name="visibility"
+                value={form.visibility}
+                onChange={handleChange}
+                className="px-2 py-1 bg-gray-800 border border-white/10 rounded-lg text-white text-sm"
+              >
+                <option value="PUBLIC">Public</option>
+                <option value="PRIVATE">Private</option>
+                <option value="LINK_ONLY">Link Only</option>
+              </select>
+            </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          {/* Selected Teacher Info (for edit mode) */}
+          {mode === "edit" && batch?.teacher && (
+            <div className="mt-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+              <p className="text-sm text-blue-400">
+                <span className="font-medium">Current Teacher:</span>{" "}
+                {batch.teacher.name}
+                {batch.teacher.qualification &&
+                  ` (${batch.teacher.qualification})`}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                You can change the teacher by selecting a different one from the
+                dropdown above.
+              </p>
+            </div>
+          )}
+
+          {/* Form Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-white/10 rounded-lg text-gray-300 hover:bg-white/5"
+              className="px-4 py-2 border border-white/10 rounded-lg text-gray-300 hover:bg-white/5 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isLoading}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+              disabled={isLoading || isLoadingTeachers}
+              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-colors disabled:opacity-50 flex items-center gap-2"
             >
-              {isLoading
-                ? "Saving..."
-                : mode === "create"
-                  ? "Create Batch"
-                  : "Update Batch"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : mode === "create" ? (
+                "Create Batch"
+              ) : (
+                "Update Batch"
+              )}
             </button>
           </div>
         </form>
@@ -1809,7 +1914,6 @@ const BatchModal = ({
     </div>
   );
 };
-
 // =============================================
 // VIEW MODAL
 // =============================================
@@ -2384,33 +2488,110 @@ const MaterialsModal = ({
 // =============================================
 // ENROLLMENTS MODAL
 // =============================================
+interface EnrollmentsModalProps {
+  batch: Batch;
+  enrollments: Enrollment[];
+  onClose: () => void;
+  onEnrollStudent: (data: { studentId: string }) => void; // Updated type
+}
+// =============================================
+// ENROLLMENTS MODAL
+// =============================================
 
 interface EnrollmentsModalProps {
   batch: Batch;
   enrollments: Enrollment[];
   onClose: () => void;
-  onEnrollStudent: (studentId: string) => void;
+  onEnrollSuccess?: () => void; // Optional callback to refresh data
 }
 
 const EnrollmentsModal = ({
   batch,
   enrollments,
   onClose,
-  onEnrollStudent,
+  onEnrollSuccess,
 }: EnrollmentsModalProps) => {
   const [showEnrollForm, setShowEnrollForm] = useState(false);
-  const [studentId, setStudentId] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [showStudentList, setShowStudentList] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Enroll mutation
+  const [enrollInBatch, { isLoading: isEnrolling }] =
+    useEnrollInBatchMutation();
+
+  // Fetch students for enrollment
+  const { data: studentsData, isLoading: isLoadingStudents } =
+    useGetStudentsQuery({
+      page: 1,
+      limit: 20,
+      search: searchTerm || undefined,
+      isActive: true,
+    });
+
+  const students = studentsData?.data || [];
+
+  // Filter out already enrolled students
+  const enrolledStudentIds = new Set(enrollments.map((e) => e.studentId));
+  const availableStudents = students.filter(
+    (s) => !enrolledStudentIds.has(s.id),
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onEnrollStudent(studentId);
-    setShowEnrollForm(false);
-    setStudentId("");
+    if (selectedStudentId && batch) {
+      try {
+        // Call the API directly with studentId in the request body
+        await enrollInBatch({
+          batchId: batch.id,
+          data: {
+            studentId: selectedStudentId,
+            autoApprove: true,
+          },
+        }).unwrap();
+
+        Swal.fire({
+          title: "Success!",
+          text: "Student enrolled successfully.",
+          icon: "success",
+          background: "#1f2937",
+          color: "#fff",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+
+        setShowEnrollForm(false);
+        setSelectedStudentId("");
+        setSearchTerm("");
+
+        // Call the success callback to refresh data
+        if (onEnrollSuccess) {
+          onEnrollSuccess();
+        }
+      } catch (error: any) {
+        Swal.fire({
+          title: "Error!",
+          text: error.data?.message || "Failed to enroll student",
+          icon: "error",
+          background: "#1f2937",
+          color: "#fff",
+        });
+      }
+    }
+  };
+
+  const handleSelectStudent = (studentId: string) => {
+    setSelectedStudentId(studentId);
+    setShowStudentList(false);
+    const selected = students.find((s) => s.id === studentId);
+    if (selected) {
+      setSearchTerm(selected.name);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-      <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-gray-900 p-6 border-b border-white/10 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">
             Enrollments - {batch.name}
@@ -2424,86 +2605,227 @@ const EnrollmentsModal = ({
         </div>
 
         <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-white font-medium">
-              Enrolled Students ({enrollments.length})
-            </h3>
+          {/* Header with Stats */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+              <p className="text-2xl font-bold text-white">
+                {enrollments.length}
+              </p>
+              <p className="text-xs text-gray-400">Total Enrolled</p>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+              <p className="text-2xl font-bold text-green-400">
+                {enrollments.filter((e) => e.status === "APPROVED").length}
+              </p>
+              <p className="text-xs text-gray-400">Approved</p>
+            </div>
+            <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+              <p className="text-2xl font-bold text-yellow-400">
+                {enrollments.filter((e) => e.status === "PENDING").length}
+              </p>
+              <p className="text-xs text-gray-400">Pending</p>
+            </div>
+          </div>
+
+          {/* Enroll New Student Section */}
+          <div className="mb-6">
             <button
               onClick={() => setShowEnrollForm(!showEnrollForm)}
-              className="px-3 py-1 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600"
+              className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all flex items-center justify-center gap-2"
             >
-              {showEnrollForm ? "Cancel" : "Enroll Student"}
+              <Plus className="w-5 h-5" />
+              {showEnrollForm ? "Cancel Enrollment" : "Enroll New Student"}
             </button>
           </div>
 
           {showEnrollForm && (
-            <form
-              onSubmit={handleSubmit}
-              className="mb-6 p-4 bg-gray-800/50 rounded-lg"
-            >
-              <input
-                type="text"
-                placeholder="Student ID"
-                value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-white/10 rounded-lg text-white mb-3"
-                required
-              />
+            <div className="mb-6 p-4 bg-gray-800/50 rounded-lg border border-green-500/30">
+              <h4 className="text-white font-medium mb-3">
+                Select Student to Enroll
+              </h4>
+
+              {/* Student Search */}
+              <div className="relative mb-3">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Search students by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowStudentList(true);
+                    setSelectedStudentId("");
+                  }}
+                  onFocus={() => setShowStudentList(true)}
+                  className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500/50"
+                />
+
+                {/* Student Dropdown */}
+                {showStudentList && searchTerm && (
+                  <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-white/10 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                    {isLoadingStudents ? (
+                      <div className="p-4 text-center">
+                        <Loader2 className="w-5 h-5 animate-spin text-green-400 mx-auto" />
+                      </div>
+                    ) : availableStudents.length > 0 ? (
+                      availableStudents.map((student) => (
+                        <div
+                          key={student.id}
+                          onClick={() => handleSelectStudent(student.id)}
+                          className="p-3 hover:bg-gray-700 cursor-pointer border-b border-white/5 last:border-0"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                              <span className="text-sm font-medium text-white">
+                                {student.name?.charAt(0) || "S"}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-white font-medium">
+                                {student.name}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {student.user?.email}
+                              </p>
+                              {student.class && (
+                                <p className="text-xs text-gray-500">
+                                  Class: {student.class}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-gray-400">
+                        No available students found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Student Info */}
+              {selectedStudentId && (
+                <div className="mb-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                  <p className="text-sm text-green-400">
+                    ✓ Student selected for enrollment
+                  </p>
+                </div>
+              )}
+
+              {/* Enroll Button */}
               <button
-                type="submit"
-                className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                onClick={handleSubmit}
+                disabled={!selectedStudentId || isEnrolling}
+                className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Enroll Student
+                {isEnrolling ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Enrolling...
+                  </>
+                ) : (
+                  "Confirm Enrollment"
+                )}
               </button>
-            </form>
+            </div>
           )}
 
-          <div className="space-y-2">
-            {enrollments.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">
-                No enrollments yet
-              </p>
-            ) : (
-              enrollments.map((enrollment) => (
-                <div
-                  key={enrollment.id}
-                  className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                      <span className="text-sm font-medium text-white">
-                        {enrollment.student?.name?.charAt(0) || "S"}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-white">{enrollment.student?.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {enrollment.student?.email}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        enrollment.status === "APPROVED"
-                          ? "bg-green-500/20 text-green-400"
-                          : enrollment.status === "PENDING"
-                            ? "bg-yellow-500/20 text-yellow-400"
-                            : "bg-red-500/20 text-red-400"
-                      }`}
-                    >
-                      {enrollment.status}
-                    </span>
-                    <span className="text-sm text-white">
-                      ₹{enrollment.paidAmount}/₹{enrollment.totalFees}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {new Date(enrollment.appliedAt).toLocaleDateString()}
-                    </span>
-                  </div>
+          {/* Enrollments List */}
+          <div>
+            <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-400" />
+              Enrolled Students ({enrollments.length})
+            </h3>
+
+            <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+              {enrollments.length === 0 ? (
+                <div className="text-center py-12 bg-gray-800/30 rounded-lg">
+                  <Users className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-400">No students enrolled yet</p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Click "Enroll New Student" to add students to this batch
+                  </p>
                 </div>
-              ))
-            )}
+              ) : (
+                enrollments.map((enrollment) => {
+                  const student = enrollment.student;
+                  return (
+                    <div
+                      key={enrollment.id}
+                      className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                          <span className="text-sm font-medium text-white">
+                            {student?.name?.charAt(0) || "S"}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-white font-medium">
+                              {student?.name}
+                            </p>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs ${
+                                enrollment.status === "APPROVED"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : enrollment.status === "PENDING"
+                                    ? "bg-yellow-500/20 text-yellow-400"
+                                    : "bg-red-500/20 text-red-400"
+                              }`}
+                            >
+                              {enrollment.status}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs">
+                            <span className="text-gray-400">
+                              {student?.email}
+                            </span>
+                            {student?.class && (
+                              <>
+                                <span className="text-gray-600">•</span>
+                                <span className="text-gray-400">
+                                  Class {student.class}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-sm text-white">
+                            ₹{enrollment.paidAmount.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            of ₹{enrollment.totalFees.toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="text-xs text-gray-500 min-w-[80px] text-right">
+                          {new Date(enrollment.appliedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Batch Info Footer */}
+          <div className="mt-6 pt-4 border-t border-white/10 text-sm text-gray-500">
+            <div className="flex justify-between items-center">
+              <span>Total Capacity: {batch.maxStudents || "Unlimited"}</span>
+              <span>
+                Available Seats:{" "}
+                {batch.maxStudents
+                  ? Math.max(0, batch.maxStudents - enrollments.length)
+                  : "∞"}
+              </span>
+            </div>
           </div>
         </div>
       </div>
