@@ -1684,43 +1684,6 @@ const ModeratorViewModal = ({
                     Assign Batches
                   </button>
                 </div>
-
-                {batches.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    No batches assigned to this moderator
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {batches.map((batch: any) => (
-                      <div
-                        key={batch.id}
-                        className="bg-gray-800/50 rounded-xl p-4 flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                            <Layers className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <p className="text-white font-medium">
-                              {batch.name}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {batch.subject} • {batch.mode} • Teacher:{" "}
-                              {batch.teacher?.name || "N/A"}
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => onRemoveBatch(batch.id)}
-                          className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-red-400"
-                          title="Remove Batch"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             )}
 

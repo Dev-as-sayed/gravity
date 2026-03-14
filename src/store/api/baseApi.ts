@@ -23,6 +23,12 @@ export const baseApi = createApi({
     "ModeratorStats",
     "ModeratorBatches",
     "ModeratorActivity",
+    "Course",
+    "Batch",
+    "Enrollment",
+    "BatchMaterial",
+    "BatchReview",
+    "BatchStats",
   ],
 
   endpoints: () => ({}),
