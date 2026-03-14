@@ -302,8 +302,10 @@ export const quizApi = baseApi.injectEndpoints({
     /**
      * Get all questions for a quiz
      */
+
+    // src\app\api\quizzes\quizId\[quizId]\questions\[questionId]\route.ts
     getQuizQuestions: builder.query<Question[], string>({
-      query: (quizId) => `/quizzes/${quizId}/questions`,
+      query: (quizId) => `/quizzes/quizId/${quizId}/questions`,
       providesTags: (result, error, quizId) => [
         { type: "QuizQuestions", id: quizId },
       ],
@@ -316,7 +318,7 @@ export const quizApi = baseApi.injectEndpoints({
      * Get student's attempts for a quiz
      */
     getQuizAttempts: builder.query<QuizAttempt[], string>({
-      query: (quizId) => `/quizzes/${quizId}/attempt`,
+      query: (quizId) => `/quizzes/quizId/${quizId}/attempt`,
       providesTags: (result, error, quizId) => [
         { type: "QuizAttempts", id: quizId },
       ],
@@ -331,7 +333,7 @@ export const quizApi = baseApi.injectEndpoints({
       { quizId: string; page?: number; limit?: number }
     >({
       query: ({ quizId, page = 1, limit = 10 }) =>
-        `/quizzes/${quizId}/results?page=${page}&limit=${limit}`,
+        `/quizzes/quizId/${quizId}/results?page=${page}&limit=${limit}`,
       providesTags: (result, error, { quizId }) => [
         { type: "QuizResults", id: quizId },
       ],

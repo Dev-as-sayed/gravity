@@ -35,6 +35,10 @@ export const baseApi = createApi({
     "QuizAnalytics",
     "QuizQuestions",
     "QuizAttempts",
+    "Exam",
+    "ExamStats",
+    "ExamResults",
+    "ExamResult",
   ],
 
   endpoints: () => ({}),
