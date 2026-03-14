@@ -75,7 +75,6 @@ export const adminNavItems: NavItem[] = [
   { name: "Guardians", icon: Heart, path: "/dashboard/admin/guardians" },
   { name: "Moderators", icon: Shield, path: "/dashboard/admin/moderators" },
   { name: "Courses", icon: BookOpen, path: "/dashboard/admin/courses" },
-  { name: "Batches", icon: Layers, path: "/dashboard/admin/batches" },
   {
     name: "Enrollments",
     icon: ClipboardList,
