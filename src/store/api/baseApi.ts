@@ -43,6 +43,13 @@ export const baseApi = createApi({
     "DoubtStats",
     "DoubtAnswers",
     "DoubtAnswer",
+    "Post",
+    "MediaStats",
+    "PostMedia",
+    "PostReactions",
+    "PostComments",
+    "UserBookmarks",
+    "UserCollections",
   ],
 
   endpoints: () => ({}),
