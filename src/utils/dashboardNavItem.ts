@@ -80,7 +80,7 @@ export const adminNavItems: NavItem[] = [
     icon: ClipboardList,
     path: "/dashboard/admin/enrollments",
   },
-  { name: "Posts", icon: FileText, path: "/dashboard/admin/posts" },
+  { name: "Media", icon: FileText, path: "/dashboard/admin/media" },
   { name: "Blogs", icon: Newspaper, path: "/dashboard/admin/blogs" },
   { name: "Quizzes", icon: HelpCircle, path: "/dashboard/admin/quizzes" },
   { name: "Exams", icon: ScrollText, path: "/dashboard/admin/exams" },
