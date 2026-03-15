@@ -89,7 +89,6 @@ export default function Navbar() {
                       }
                     `}
                   >
-                    <Icon className="w-4 h-4" />
                     <span>{item.name}</span>
 
                     {/* Active indicator */}
@@ -355,36 +354,7 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-      {/* Mobile Top Logo */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-4 h-14">
-          <Link href="/" className="flex items-center space-x-2">
-            <Atom className="w-6 h-6 text-primary" />
-            <span className="text-lg font-semibold">Gravity</span>
-          </Link>
-
-          {/* Mobile top bar right section */}
-          {isAuthenticated ? (
-            <Link
-              href={getDashboardPath}
-              className="p-2 rounded-lg bg-primary/10 text-primary"
-            >
-              <LayoutDashboard className="w-5 h-5" />
-            </Link>
-          ) : (
-            <Link
-              href="/auth/login"
-              className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium"
-            >
-              Login
-            </Link>
-          )}
-        </div>
-      </div>
-      {/* Spacers */}
-      <div className="hidden md:block h-16" />
-      <div className="md:hidden block h-14" /> {/* Top spacer */}
-      <div className="md:hidden block h-16" /> {/* Bottom spacer */}
+      <div className="block h-0 md:h-16" />
     </>
   );
 }

@@ -85,22 +85,10 @@ export const adminNavItems: NavItem[] = [
   { name: "Quizzes", icon: HelpCircle, path: "/dashboard/admin/quizzes" },
   { name: "Exams", icon: ScrollText, path: "/dashboard/admin/exams" },
   { name: "Notes", icon: File, path: "/dashboard/admin/notes" },
-  { name: "Payments", icon: CreditCard, path: "/dashboard/admin/payments" },
-  {
-    name: "Transactions",
-    icon: Receipt,
-    path: "/dashboard/admin/transactions",
-  },
-  { name: "Refunds", icon: RotateCcw, path: "/dashboard/admin/refunds" },
-  { name: "Coupons", icon: Tag, path: "/dashboard/admin/coupons" },
-  { name: "Support", icon: Headset, path: "/dashboard/admin/support" },
   { name: "Doubts", icon: HelpCircle, path: "/dashboard/admin/doubts" },
-  { name: "Analytics", icon: BarChart, path: "/dashboard/admin/analytics" },
-  { name: "Reports", icon: FileBarChart, path: "/dashboard/admin/reports" },
+  { name: "Payments", icon: CreditCard, path: "/dashboard/admin/payments" },
+  { name: "Coupons", icon: Tag, path: "/dashboard/admin/coupons" },
   { name: "Activity Logs", icon: Activity, path: "/dashboard/admin/logs" },
-  { name: "Settings", icon: Settings, path: "/dashboard/admin/settings" },
-  { name: "System", icon: Cog, path: "/dashboard/admin/system" },
-  { name: "Audit Logs", icon: History, path: "/dashboard/admin/audit" },
 ];
 
 // Teacher Navigation Items
