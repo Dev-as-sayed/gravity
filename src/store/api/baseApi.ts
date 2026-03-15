@@ -50,6 +50,10 @@ export const baseApi = createApi({
     "PostComments",
     "UserBookmarks",
     "UserCollections",
+    "Blog",
+    "BlogStats",
+    "BlogComments",
+    "CommentStats",
   ],
 
   endpoints: () => ({}),
