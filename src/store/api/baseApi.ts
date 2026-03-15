@@ -56,6 +56,11 @@ export const baseApi = createApi({
     "CommentStats",
     "Note",
     "NoteStats",
+    "Payment",
+    "PaymentStats",
+    "PaymentReceipt",
+    "StudentPayments",
+    "EnrollmentPayments",
   ],
 
   endpoints: () => ({}),
