@@ -34,6 +34,10 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
+        console.log(
+          `User lookup for email: ${credentials.email} - Found: ${!!user}`,
+          user,
+        );
         if (!user || !user.password) {
           throw new Error("Invalid credentials");
         }

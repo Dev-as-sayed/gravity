@@ -73,6 +73,7 @@ export const loginUser = createAsyncThunk(
       const sessionResponse = await fetch("/api/auth/session");
       const session = await sessionResponse.json();
 
+      console.log("check point 2 - Session fetched successfully", session);
       if (!session?.user) {
         return rejectWithValue("Failed to fetch user session");
       }
