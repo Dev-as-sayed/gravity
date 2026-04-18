@@ -241,84 +241,6 @@ INSERT INTO gravity."Enrollment" (
 ('cm7jv6k8k0037xjrcso65x1rk', 'cm7jv6k8k0021xjrcso65x1r4', 'cm7jv6k8k0032xjrcso65x1rf', 'APPROVED', NOW() - INTERVAL '15 days', 'PARTIAL', 6999.00, 3500.00, 3499.00, NOW(), NOW()),
 ('cm7jv6k8k0038xjrcso65x1rl', 'cm7jv6k8k0022xjrcso65x1r5', 'cm7jv6k8k0033xjrcso65x1rg', 'WAITLISTED', NOW() - INTERVAL '2 days', 'PENDING', 3999.00, 0, 3999.00, NOW(), NOW());
 
--- ==================================================
--- INSERT PAYMENTS
--- ==================================================
-INSERT INTO gravity."Payment" (
-    id, "enrollmentId", "studentId", amount, "paidAmount", method, status, "transactionId", "paymentDate", "createdAt", "updatedAt"
-) VALUES
-('cm7jv6k8k0039xjrcso65x1rm', 'cm7jv6k8k0034xjrcso65x1rh', 'cm7jv6k8k0018xjrcso65x1r1', 4999.00, 4999.00, 'ONLINE', 'COMPLETED', 'TXN' || floor(random() * 1000000)::text, NOW() - INTERVAL '30 days', NOW(), NOW()),
-('cm7jv6k8k0040xjrcso65x1rn', 'cm7jv6k8k0035xjrcso65x1ri', 'cm7jv6k8k0019xjrcso65x1r2', 4999.00, 4999.00, 'CARD', 'COMPLETED', 'TXN' || floor(random() * 1000000)::text, NOW() - INTERVAL '25 days', NOW(), NOW()),
-('cm7jv6k8k0041xjrcso65x1ro', 'cm7jv6k8k0037xjrcso65x1rk', 'cm7jv6k8k0021xjrcso65x1r4', 3500.00, 3500.00, 'UPI', 'COMPLETED', 'TXN' || floor(random() * 1000000)::text, NOW() - INTERVAL '15 days', NOW(), NOW());
-
--- ==================================================
--- INSERT QUIZZES
--- ==================================================
-INSERT INTO public."Quiz" (
-    id, title, slug, description, "teacherId", "batchId", "timeLimit", "totalMarks", "passingMarks", status, difficulty, subject, "createdAt", "updatedAt"
-) VALUES
-('cm7jv6k8k0042xjrcso65x1rp', 'Quantum Mechanics Basics Quiz', 'quantum-basics-quiz', 'Test your understanding of quantum fundamentals', 'cm7jv6k8k0014xjrcso65x1qx', 'cm7jv6k8k0030xjrcso65x1rd', 30, 50, 20, 'PUBLISHED', 'BEGINNER', 'Quantum Physics', NOW(), NOW()),
-('cm7jv6k8k0043xjrcso65x1rq', 'Maxwell''s Equations Test', 'maxwell-equations-test', 'Practice problems on Maxwell''s equations', 'cm7jv6k8k0015xjrcso65x1qy', 'cm7jv6k8k0031xjrcso65x1re', 45, 75, 45, 'PUBLISHED', 'INTERMEDIATE', 'Electromagnetism', NOW(), NOW()),
-('cm7jv6k8k0044xjrcso65x1rr', 'Relativity Concepts', 'relativity-concepts', 'Special and General Relativity questions', 'cm7jv6k8k0016xjrcso65x1qz', 'cm7jv6k8k0032xjrcso65x1rf', 60, 100, 60, 'DRAFT', 'ADVANCED', 'Relativity', NOW(), NOW());
-
--- ==================================================
--- INSERT QUESTIONS
--- ==================================================
-INSERT INTO public."Question" (
-    id, "quizId", text, type, options, "correctAnswer", explanation, marks, "order", difficulty, topic, "createdAt", "updatedAt"
-) VALUES
--- Questions for Quantum Basics Quiz
-('cm7jv6k8k0045xjrcso65x1rs', 'cm7jv6k8k0042xjrcso65x1rp', 'What is the de Broglie wavelength of a particle?', 'MCQ', '["λ = h/p", "λ = hf", "λ = h/mv²", "λ = mc²"]'::json, '0', 'The de Broglie wavelength is given by λ = h/p where h is Planck''s constant and p is momentum.', 5, 1, 'BEGINNER', 'Wave-Particle Duality', NOW(), NOW()),
-('cm7jv6k8k0046xjrcso65x1rt', 'cm7jv6k8k0042xjrcso65x1rp', 'The Heisenberg Uncertainty Principle states:', 'MCQ', '["Δx Δp ≥ ħ/2", "Δx Δp ≤ ħ/2", "ΔE Δt ≥ ħ", "E = hf"]'::json, '0', 'The uncertainty principle states that the product of uncertainties in position and momentum is at least ħ/2.', 5, 2, 'BEGINNER', 'Uncertainty Principle', NOW(), NOW()),
-('cm7jv6k8k0047xjrcso65x1ru', 'cm7jv6k8k0042xjrcso65x1rp', 'Which of the following is NOT a quantum number?', 'MCQ', '["Principal", "Azimuthal", "Magnetic", "Velocity"]'::json, '3', 'Velocity is a classical concept, not a quantum number. The quantum numbers are principal, azimuthal, magnetic, and spin.', 5, 3, 'BEGINNER', 'Quantum Numbers', NOW(), NOW());
-
--- ==================================================
--- INSERT POSTS
--- ==================================================
-INSERT INTO public."Post" (
-    id, title, content, slug, type, status, visibility, "teacherId", views, "createdAt", "updatedAt"
-) VALUES
-('cm7jv6k8k0048xjrcso65x1rv', 'Understanding Quantum Entanglement', 'Quantum entanglement is a physical phenomenon that occurs when a pair or group of particles interact in ways such that the quantum state of each particle cannot be described independently...', 'quantum-entanglement-explained', 'TEXT', 'PUBLISHED', 'PUBLIC', 'cm7jv6k8k0014xjrcso65x1qx', 1250, NOW() - INTERVAL '10 days', NOW()),
-('cm7jv6k8k0049xjrcso65x1rw', '5 Tips for Mastering Electromagnetism', 'Electromagnetism can be challenging. Here are 5 proven strategies to master this subject...', 'electromagnetism-tips', 'TEXT', 'PUBLISHED', 'PUBLIC', 'cm7jv6k8k0015xjrcso65x1qy', 850, NOW() - INTERVAL '7 days', NOW()),
-('cm7jv6k8k0050xjrcso65x1rx', 'The Beauty of General Relativity', 'Einstein''s theory of general relativity describes gravity not as a force, but as a curvature of spacetime...', 'general-relativity-beauty', 'TEXT', 'PUBLISHED', 'PUBLIC', 'cm7jv6k8k0016xjrcso65x1qz', 2100, NOW() - INTERVAL '5 days', NOW());
-
--- ==================================================
--- INSERT COMMENTS
--- ==================================================
-INSERT INTO public."Comment" (
-    id, content, "postId", "studentId", likes, status, "createdAt", "updatedAt"
-) VALUES
-('cm7jv6k8k0051xjrcso65x1ry', 'This explanation really helped me understand entanglement! Thanks Dr. Sharma.', 'cm7jv6k8k0048xjrcso65x1rv', 'cm7jv6k8k0018xjrcso65x1r1', 5, 'ACTIVE', NOW() - INTERVAL '9 days', NOW()),
-('cm7jv6k8k0052xjrcso65x1rz', 'Could you explain more about Bell''s theorem?', 'cm7jv6k8k0048xjrcso65x1rv', 'cm7jv6k8k0019xjrcso65x1r2', 2, 'ACTIVE', NOW() - INTERVAL '8 days', NOW()),
-('cm7jv6k8k0053xjrcso65x1s0', 'Tip #3 about visualization really worked for me!', 'cm7jv6k8k0049xjrcso65x1rw', 'cm7jv6k8k0020xjrcso65x1r3', 3, 'ACTIVE', NOW() - INTERVAL '6 days', NOW());
-
--- ==================================================
--- INSERT POST REACTIONS
--- ==================================================
-INSERT INTO public."PostReaction" (
-    id, "postId", "studentId", type, "createdAt"
-) VALUES
-('cm7jv6k8k0054xjrcso65x1s1', 'cm7jv6k8k0048xjrcso65x1rv', 'cm7jv6k8k0018xjrcso65x1r1', 'LIKE', NOW() - INTERVAL '9 days'),
-('cm7jv6k8k0055xjrcso65x1s2', 'cm7jv6k8k0048xjrcso65x1rv', 'cm7jv6k8k0019xjrcso65x1r2', 'LOVE', NOW() - INTERVAL '8 days'),
-('cm7jv6k8k0056xjrcso65x1s3', 'cm7jv6k8k0049xjrcso65x1rw', 'cm7jv6k8k0020xjrcso65x1r3', 'HELPFUL', NOW() - INTERVAL '6 days');
-
--- ==================================================
--- INSERT NOTIFICATIONS
--- ==================================================
-INSERT INTO public."Notification" (
-    id, "userId", type, channel, title, message, data, "isRead", "createdAt"
-) VALUES
-('cm7jv6k8k0057xjrcso65x1s4', 'cm7jv6k8k0018xjrcso65x1r1', 'CLASS_REMINDER', 'INAPP', 'Class Reminder', 'Your Quantum Physics class starts in 1 hour', '{"batchId": "cm7jv6k8k0030xjrcso65x1rd", "time": "10:00 AM"}'::json, false, NOW() - INTERVAL '1 day'),
-('cm7jv6k8k0058xjrcso65x1s5', 'cm7jv6k8k0019xjrcso65x1r2', 'EXAM_UPDATE', 'EMAIL', 'Quiz Available', 'A new quiz "Quantum Basics" is now available', '{"quizId": "cm7jv6k8k0042xjrcso65x1rp"}'::json, false, NOW() - INTERVAL '2 days'),
-('cm7jv6k8k0059xjrcso65x1s6', 'cm7jv6k8k0021xjrcso65x1r4', 'PAYMENT_REMINDER', 'WHATSAPP', 'Payment Due Reminder', 'Your installment payment of ₹3500 is due in 3 days', '{"enrollmentId": "cm7jv6k8k0037xjrcso65x1rk", "amount": 3500}'::json, false, NOW() - INTERVAL '3 days');
-
--- ==================================================
--- UPDATE SEQUENCES (if using serial IDs)
--- ==================================================
--- Note: If you're using sequences, uncomment and run these:
--- SELECT setval('"User_id_seq"', (SELECT MAX(id) FROM "User") + 1);
--- Add similar for other tables with serial IDs
-
 
 
 INSERT INTO gravity."Course" (
@@ -428,4 +350,234 @@ INSERT INTO gravity."Payment" (
 ('pay_003', 'enr_003', 'student_aditya_003', 15000, 15000, 'CARD', 'COMPLETED', 'TXN_1003', 'Stripe', NOW(), 'INV_2024_003', NOW(), NOW()),
 ('pay_004', 'enr_004', 'student_ananya_004', 25000, 25000, 'NET_BANKING', 'COMPLETED', 'TXN_1004', 'Razorpay', NOW(), 'INV_2024_004', NOW(), NOW()),
 ('pay_005', 'enr_005', 'student_vikram_005', 18000, 18000, 'ONLINE', 'COMPLETED', 'TXN_1005', 'Razorpay', NOW(), 'INV_2024_005', NOW(), NOW());
+
+
+
+
+INSERT INTO gravity."Quiz" (
+  id,
+  title,
+  description,
+  "teacherId",
+  "batchId",
+  "timeLimit",
+  "totalMarks",
+  "passingMarks",
+  "negativeMarking",
+  status,
+  subject,
+  difficulty,
+  "createdAt",
+  "updatedAt"
+) VALUES
+('qz_001', 'Mechanics Basics Quiz', 'Test your understanding of Newton''s Laws and Kinematics', 'cm7jv6k8k0014xjrcso65x1qx', 'bch_001', 30, 50, 30, 0.25, 'PUBLISHED', 'Mechanics', 'INTERMEDIATE', NOW(), NOW()),
+
+('qz_002', 'Quantum Physics Fundamentals', 'Schrödinger equation, wave functions, and quantum states', 'cm7jv6k8k0015xjrcso65x1qy', 'bch_003', 45, 100, 60, 0.33, 'PUBLISHED', 'Quantum Physics', 'ADVANCED', NOW(), NOW()),
+
+('qz_003', 'Electromagnetism - Maxwell''s Equations', 'Comprehensive test on EM theory', 'cm7jv6k8k0016xjrcso65x1qz', 'bch_004', 40, 75, 45, 0.25, 'PUBLISHED', 'Electromagnetism', 'ADVANCED', NOW(), NOW()),
+
+('qz_004', 'NEET Physics - Mock Test 1', 'Full syllabus mock test for NEET preparation', 'cm7jv6k8k0014xjrcso65x1qx', 'bch_005', 60, 180, 108, 0.25, 'PUBLISHED', 'Physics', 'INTERMEDIATE', NOW(), NOW()),
+
+('qz_005', 'Class 11 - Kinematics', 'Motion in straight line and plane', 'cm7jv6k8k0015xjrcso65x1qy', 'bch_006', 25, 40, 24, 0, 'PUBLISHED', 'Kinematics', 'BEGINNER', NOW(), NOW()),
+
+('qz_006', 'JEE Advanced - Rotational Motion', 'Advanced level problems on rigid body dynamics', 'cm7jv6k8k0014xjrcso65x1qx', 'bch_002', 50, 120, 72, 0.5, 'PUBLISHED', 'Rotational Mechanics', 'EXPERT', NOW(), NOW());
+
+
+INSERT INTO gravity."Question" (
+  id,
+  "quizId",
+  text,
+  type,
+  options,
+  "correctAnswer",
+  explanation,
+  marks,
+  "negativeMarks",
+  "order",
+  "createdAt",
+  "updatedAt"
+) VALUES
+('q_001', 'qz_001', 'A ball is thrown vertically upward with velocity 20 m/s. What is the maximum height reached? (g = 10 m/s²)', 'MCQ',
+'["10 m", "15 m", "20 m", "25 m"]'::jsonb,
+'{"answer": 2}'::jsonb,
+'Using v² = u² - 2gh, at max height v=0, so h = u²/2g = 400/20 = 20m',
+5, 1.25, 1, NOW(), NOW()),
+
+('q_002', 'qz_001', 'Newton''s First Law is also known as:', 'MCQ',
+'["Law of Inertia", "Law of Force", "Law of Action-Reaction", "Law of Gravitation"]'::jsonb,
+'{"answer": 0}'::jsonb,
+'Newton''s First Law describes inertia - objects maintain their state of motion unless acted upon by external force',
+5, 1.25, 2, NOW(), NOW()),
+
+('q_003', 'qz_001', 'A force of 10 N acts on a 2 kg mass. What is the acceleration?', 'MCQ',
+'["2 m/s²", "5 m/s²", "10 m/s²", "20 m/s²"]'::jsonb,
+'{"answer": 1}'::jsonb,
+'F = ma, so a = F/m = 10/2 = 5 m/s²',
+5, 1.25, 3, NOW(), NOW()),
+
+('q_004', 'qz_001', 'Which of Newton''s laws explains rocket propulsion?', 'MCQ',
+'["First Law", "Second Law", "Third Law", "Law of Gravitation"]'::jsonb,
+'{"answer": 2}'::jsonb,
+'Rockets work on action-reaction principle - third law of motion',
+5, 1.25, 4, NOW(), NOW()),
+
+('q_005', 'qz_001', 'A car of mass 1000 kg moving at 20 m/s comes to rest in 5 seconds. Find the braking force.', 'MCQ',
+'["2000 N", "4000 N", "5000 N", "10000 N"]'::jsonb,
+'{"answer": 1}'::jsonb,
+'a = (v-u)/t = (0-20)/5 = -4 m/s², F = ma = 1000 × 4 = 4000 N',
+5, 1.25, 5, NOW(), NOW());
+
+
+-- Quiz 2
+INSERT INTO gravity."Question" (
+  id,
+  "quizId",
+  text,
+  type,
+  options,
+  "correctAnswer",
+  explanation,
+  marks,
+  "negativeMarks",
+  "order",
+  "createdAt",
+  "updatedAt"
+) VALUES
+('q_006', 'qz_002', 'What does the Schrödinger equation describe?', 'MCQ',
+'["Motion of particles", "Wave function evolution", "Energy quantization", "Spin of electrons"]'::jsonb,
+'{"answer": 1}'::jsonb,
+'The Schrödinger equation describes how the quantum state (wave function) of a physical system changes over time',
+10, 3.33, 1, NOW(), NOW()),
+
+('q_007', 'qz_002', 'The uncertainty principle states that:', 'MCQ',
+'["Δx × Δp ≥ ħ/2", "ΔE × Δt ≤ ħ", "Δx × Δp = 0", "E = mc²"]'::jsonb,
+'{"answer": 0}'::jsonb,
+'Heisenberg uncertainty principle: Δx Δp ≥ ħ/2',
+10, 3.33, 2, NOW(), NOW()),
+
+('q_008', 'qz_002', 'What is the de Broglie wavelength of an electron moving with velocity 10⁶ m/s? (h = 6.63×10⁻³⁴ Js, mₑ = 9.1×10⁻³¹ kg)', 'MCQ',
+'["7.28 × 10⁻¹⁰ m", "6.63 × 10⁻¹⁰ m", "9.1 × 10⁻¹⁰ m", "3.64 × 10⁻¹⁰ m"]'::jsonb,
+'{"answer": 0}'::jsonb,
+'λ = h/mv = 6.63×10⁻³⁴/(9.1×10⁻³¹ × 10⁶) = 7.28×10⁻¹⁰ m',
+10, 3.33, 3, NOW(), NOW());
+
+
+
+SELECT id FROM gravity."User"
+
+INSERT INTO gravity."Notification" (
+    id,
+    "userId",
+    type,
+    channel,
+    title,
+    message,
+    data,
+    "isRead",
+    "createdAt"
+) VALUES
+(
+'cm7jv6k8k0057xjrcso65x1s4',
+'cm7jv6k8k0001xjrcso65x1qk',
+'CLASS_REMINDER',
+'INAPP',
+'Class Reminder',
+'Your Quantum Physics class starts in 1 hour',
+'{"batchId": "bch_003", "time": "10:00 AM"}'::jsonb,
+false,
+NOW() - INTERVAL '1 day'
+),
+
+(
+'cm7jv6k8k0058xjrcso65x1s5',
+'cm7jv6k8k0002xjrcso65x1ql',
+'EXAM_UPDATE',
+'EMAIL',
+'Quiz Available',
+'A new quiz "Quantum Basics" is now available',
+'{"quizId": "qz_002"}'::jsonb,
+false,
+NOW() - INTERVAL '2 days'
+),
+
+(
+'cm7jv6k8k0059xjrcso65x1s6',
+'cm7jv6k8k0003xjrcso65x1qm',
+'PAYMENT_REMINDER',
+'WHATSAPP',
+'Payment Due Reminder',
+'Your installment payment of ₹3500 is due in 3 days',
+'{"enrollmentId": "enr_003", "amount": 3500}'::jsonb,
+false,
+NOW() - INTERVAL '3 days'
+);
+
+
+
+SELECT * FROM gravity."Student";
+
+
+-- ==================================================
+-- DOUBTS
+-- ==================================================
+
+INSERT INTO gravity."Doubt" (
+  id,
+  title,
+  description,
+  "studentId",
+  "batchId",
+  subject,
+  status,
+  priority,
+  "assignedTo",
+  "createdAt",
+  "updatedAt"
+) VALUES
+('dbt_001', 'Confusion about Newton''s Third Law',
+'How does action-reaction pair work when a person is walking?',
+'student_rohan_001',
+'bch_001',
+'Mechanics',
+'ANSWERED',
+'MEDIUM',
+'cm7jv6k8k0014xjrcso65x1qx',
+NOW() - INTERVAL '5 days',
+NOW()),
+
+('dbt_002', 'Schrödinger equation interpretation',
+'What exactly is the physical meaning of the wave function ψ?',
+'student_rohan_001',
+'bch_003',
+'Quantum Physics',
+'OPEN',
+'HIGH',
+'cm7jv6k8k0015xjrcso65x1qy',
+NOW() - INTERVAL '2 days',
+NOW()),
+
+('dbt_003', 'Electric field inside conductor',
+'Why is electric field zero inside a conductor?',
+'student_ishita_002',
+'bch_004',
+'Electromagnetism',
+'ANSWERED',
+'LOW',
+'cm7jv6k8k0016xjrcso65x1qz',
+NOW() - INTERVAL '3 days',
+NOW()),
+
+('dbt_004', 'Projectile motion time of flight',
+'Why is time of flight same for complementary angles?',
+'student_aditya_003',
+'bch_001',
+'Kinematics',
+'RESOLVED',
+'MEDIUM',
+'cm7jv6k8k0014xjrcso65x1qx',
+NOW() - INTERVAL '4 days',
+NOW());
+-- Doubt Answers
+
+
 
