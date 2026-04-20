@@ -48,6 +48,7 @@ export const authOptions: NextAuthOptions = {
         );
 
         if (!isPasswordValid) {
+          console.log(`Password mismatch for user: ${credentials.email}`);
           throw new Error("Invalid credentials");
         }
 
