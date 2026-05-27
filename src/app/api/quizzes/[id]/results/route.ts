@@ -14,10 +14,7 @@ export async function GET(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
     );
 
     if (!auth.success) {

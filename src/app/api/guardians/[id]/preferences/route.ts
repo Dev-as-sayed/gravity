@@ -7,11 +7,11 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/guardians/[id]/preferences - Get guardian notification preferences
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - ADMIN, SUPER_ADMIN can view
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -21,7 +21,7 @@ export async function GET(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const guardian = await prisma.guardian.findUnique({
       where: { id },
@@ -56,11 +56,11 @@ export async function GET(
 // PUT /api/guardians/[id]/preferences - Update guardian notification preferences
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can update
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -70,7 +70,7 @@ export async function PUT(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     // Check if guardian exists

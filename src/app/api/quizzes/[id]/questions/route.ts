@@ -14,10 +14,7 @@ export async function GET(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
     );
 
     if (!auth.success) {
@@ -56,7 +53,7 @@ export async function POST(
   try {
     const { id } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({

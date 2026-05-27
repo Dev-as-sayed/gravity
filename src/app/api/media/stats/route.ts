@@ -7,7 +7,7 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/media/stats - Get media statistics
 export async function GET(req: NextRequest) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({

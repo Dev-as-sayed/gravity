@@ -8,11 +8,11 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/teachers/[id] - Get single teacher by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - ADMIN, SUPER_ADMIN can view any teacher
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -22,7 +22,7 @@ export async function GET(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const teacher = await prisma.teacher.findUnique({
       where: { id },
@@ -188,11 +188,11 @@ export async function GET(
 // PUT /api/teachers/[id] - Update teacher (Admin only)
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can update
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -202,7 +202,7 @@ export async function PUT(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     // Check if teacher exists
@@ -274,16 +274,9 @@ export async function PUT(
           institute: body.institute,
           experience: body.experience,
           achievements: body.achievements,
-          employeeId: body.employeeId,
-          joiningDate: body.joiningDate ? new Date(body.joiningDate) : null,
-          specializations: body.specializations,
-          researchPapers: body.researchPapers,
-          awards: body.awards,
           gstNumber: body.gstNumber,
           panNumber: body.panNumber,
           bankDetails: body.bankDetails,
-          upiId: body.upiId,
-          website: body.website,
           linkedin: body.linkedin,
           youtube: body.youtube,
           twitter: body.twitter,
@@ -315,11 +308,11 @@ export async function PUT(
 // PATCH /api/teachers/[id]/status - Toggle teacher active status
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can toggle status
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -329,7 +322,7 @@ export async function PATCH(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     if (body.isActive === undefined) {
@@ -388,11 +381,11 @@ export async function PATCH(
 // DELETE /api/teachers/[id] - Delete teacher (Admin only)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can delete
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -402,7 +395,7 @@ export async function DELETE(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if teacher exists
     const teacher = await prisma.teacher.findUnique({

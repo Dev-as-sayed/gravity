@@ -9,10 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "MODERATOR",
+      "TEACHER", "MODERATOR",
     );
 
     if (!auth.success) {

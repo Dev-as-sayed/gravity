@@ -33,10 +33,11 @@ export const useUser = () => {
     isLoading,
     role,
 
-    // Helper flags (very useful in UI)
-    isAdmin: role === "admin",
-    isTeacher: role === "teacher",
-    isStudent: role === "student",
+    // Helper flags
+    isTeacher: role === "TEACHER",
+    isModerator: role === "MODERATOR",
+    isStudent: role === "STUDENT",
+    isGuardian: role === "GUARDIAN",
 
     hasUser: !!user,
   };

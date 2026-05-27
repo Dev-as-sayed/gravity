@@ -119,9 +119,8 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-white/10 bg-gray-900/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="STUDENT">Student</option>
-                  <option value="TEACHER">Teacher</option>
-                  <option value="GUARDIAN">Guardian</option>
+                    <option value="STUDENT">Student</option>
+                    <option value="GUARDIAN">Guardian</option>
                 </select>
               </div>
 
@@ -318,45 +317,6 @@ export default function RegisterPage() {
                       <option value="STATE">State Board</option>
                       <option value="INTERNATIONAL">International</option>
                     </select>
-                  </div>
-                </>
-              )}
-
-              {formData.role === "TEACHER" && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Qualification
-                    </label>
-                    <input
-                      name="qualification"
-                      type="text"
-                      value={formData.qualification}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-white/10 bg-gray-900/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="M.Sc, Ph.D, etc."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Expertise (comma separated)
-                    </label>
-                    <input
-                      name="expertise"
-                      type="text"
-                      value={formData.expertise.join(", ")}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          expertise: e.target.value
-                            .split(",")
-                            .map((s) => s.trim()),
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-white/10 bg-gray-900/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Physics, Mathematics, Quantum Mechanics"
-                    />
                   </div>
                 </>
               )}

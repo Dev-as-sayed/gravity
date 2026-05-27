@@ -2,14 +2,14 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/apiAuthenticator";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "@/lib/password";
 import { sendResponse } from "@/lib/sendResponse";
 
 // GET /api/students - Get all students (Admin only)
 export async function GET(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -164,7 +164,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -215,7 +215,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(body.password, 10);
+    const hashedPassword = await hashPassword(body.password);
 
     // Create student with user account
     const student = await prisma.$transaction(async (tx) => {
@@ -267,6 +267,7 @@ export async function POST(req: NextRequest) {
       // Create notification preferences
       await tx.notificationPreference.create({
         data: {
+          preferences: {},
           userId: user.id,
         },
       });

@@ -696,6 +696,7 @@ export const batchApi = baseApi.injectEndpoints({
     getBatchStats: builder.query<BatchStats, void>({
       query: () => "/batches/stats",
       providesTags: ["BatchStats"],
+      transformResponse: (res: any) => res.data,
     }),
 
     /**
@@ -704,6 +705,7 @@ export const batchApi = baseApi.injectEndpoints({
     getTeacherBatchStats: builder.query<BatchStats, string>({
       query: (teacherId) => `/batches/stats/teacher/${teacherId}`,
       providesTags: ["BatchStats"],
+      transformResponse: (res: any) => res.data,
     }),
   }),
 });

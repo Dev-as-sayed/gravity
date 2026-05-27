@@ -14,10 +14,7 @@ export async function GET(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
     );
 
     if (!auth.success) {
@@ -66,7 +63,7 @@ export async function PUT(
   try {
     const { quizId, questionId } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -144,7 +141,7 @@ export async function DELETE(
   try {
     const { quizId, questionId } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({

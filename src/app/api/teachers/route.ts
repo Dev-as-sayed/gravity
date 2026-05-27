@@ -9,7 +9,7 @@ import { sendResponse } from "@/lib/sendResponse";
 export async function GET(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -145,7 +145,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -216,26 +216,16 @@ export async function POST(req: NextRequest) {
           institute: body.institute,
           experience: body.experience,
           achievements: body.achievements || [],
-          employeeId: body.employeeId,
-          joiningDate: body.joiningDate ? new Date(body.joiningDate) : null,
-          specializations: body.specializations || [],
-          researchPapers: body.researchPapers,
-          awards: body.awards || [],
           gstNumber: body.gstNumber,
           panNumber: body.panNumber,
           bankDetails: body.bankDetails,
-          upiId: body.upiId,
-          website: body.website,
-          linkedin: body.linkedin,
-          youtube: body.youtube,
-          twitter: body.twitter,
-          officeHours: body.officeHours,
         },
       });
 
       // Create notification preferences
       await tx.notificationPreference.create({
         data: {
+          preferences: {},
           userId: user.id,
         },
       });

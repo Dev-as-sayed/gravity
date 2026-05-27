@@ -7,11 +7,11 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/moderators/[id]/batches - Get batches assigned to moderator
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - ADMIN, SUPER_ADMIN can view
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -21,7 +21,7 @@ export async function GET(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const moderator = await prisma.moderator.findUnique({
       where: { id },
@@ -76,11 +76,11 @@ export async function GET(
 // POST /api/moderators/[id]/batches - Assign batches to moderator
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can modify
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -90,7 +90,7 @@ export async function POST(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { batchIds } = body;
 
@@ -146,11 +146,11 @@ export async function POST(
 // DELETE /api/moderators/[id]/batches - Remove batches from moderator
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can modify
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -160,7 +160,7 @@ export async function DELETE(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { batchIds } = body;
 

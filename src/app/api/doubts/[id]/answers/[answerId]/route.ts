@@ -14,10 +14,7 @@ export async function GET(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
       "MODERATOR",
     );
 
@@ -85,10 +82,7 @@ export async function PUT(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
       "MODERATOR",
     );
 
@@ -119,8 +113,6 @@ export async function PUT(
 
     // Check if user can update this answer
     const canUpdate =
-      auth.user?.role === "ADMIN" ||
-      auth.user?.role === "SUPER_ADMIN" ||
       (auth.user?.role === "TEACHER" &&
         answer.teacherId === auth.user.teacherId) ||
       (auth.user?.role === "STUDENT" &&
@@ -168,10 +160,7 @@ export async function DELETE(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
       "MODERATOR",
     );
 
@@ -200,8 +189,6 @@ export async function DELETE(
 
     // Check if user can delete this answer
     const canDelete =
-      auth.user?.role === "ADMIN" ||
-      auth.user?.role === "SUPER_ADMIN" ||
       (auth.user?.role === "TEACHER" &&
         answer.teacherId === auth.user.teacherId) ||
       (auth.user?.role === "STUDENT" &&

@@ -6,7 +6,7 @@ import { signIn, signOut } from "next-auth/react";
 interface User {
   id: string;
   email: string;
-  name: string | null;
+  name?: string | null;
   role: string;
   phone?: string | null;
   profileImage?: string | null;
@@ -14,7 +14,6 @@ interface User {
   studentId?: string | null;
   guardianId?: string | null;
   moderatorId?: string | null;
-  adminId?: string | null;
   isVerified?: boolean;
   lastLogin?: string;
 }

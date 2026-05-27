@@ -7,7 +7,7 @@ import { sendResponse } from "@/lib/sendResponse";
 // POST /api/blogs/bulk - Bulk operations on blogs
 export async function POST(req: NextRequest) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -100,8 +100,8 @@ export async function POST(req: NextRequest) {
 
     return sendResponse({
       success: true,
-      message: `${result.count} blogs ${action}ed successfully`,
-      data: { count: result.count },
+      message: `${result!.count} blogs ${action}ed successfully`,
+      data: { count: result!.count },
     });
   } catch (error) {
     console.error("Error in bulk blog operation:", error);

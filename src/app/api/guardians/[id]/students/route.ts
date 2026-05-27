@@ -7,11 +7,11 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/guardians/[id]/students - Get students associated with guardian
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - ADMIN, SUPER_ADMIN can view
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -21,7 +21,7 @@ export async function GET(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const guardian = await prisma.guardian.findUnique({
       where: { id },
@@ -65,11 +65,11 @@ export async function GET(
 // POST /api/guardians/[id]/students - Add students to guardian
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can modify
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -79,7 +79,7 @@ export async function POST(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { studentIds } = body;
 
@@ -128,11 +128,11 @@ export async function POST(
 // DELETE /api/guardians/[id]/students - Remove students from guardian
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can modify
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -142,7 +142,7 @@ export async function DELETE(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { studentIds } = body;
 

@@ -285,13 +285,14 @@ const notificationSlice = createSlice({
       })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.notifications = action.payload.notifications;
-        state.unreadCount = action.payload.unreadCount;
+        const d = action.payload.data || action.payload;
+        state.notifications = d.notifications || d.data || [];
+        state.unreadCount = d.unreadCount ?? state.notifications.filter((n: any) => !n.isRead).length;
         state.pagination = {
-          page: action.payload.page,
-          limit: action.payload.limit,
-          total: action.payload.total,
-          hasMore: action.payload.hasMore,
+          page: d.page || 1,
+          limit: d.limit || 20,
+          total: d.total || state.notifications.length,
+          hasMore: d.hasMore ?? false,
         };
       })
       .addCase(fetchNotifications.rejected, (state, action) => {

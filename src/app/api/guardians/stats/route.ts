@@ -8,7 +8,7 @@ import { sendResponse } from "@/lib/sendResponse";
 export async function GET(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({

@@ -7,11 +7,11 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/users/[id] - Get single user by ID (Admin only)
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -21,7 +21,7 @@ export async function GET(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Get user with all relations
     const user = await prisma.user.findUnique({
@@ -124,15 +124,6 @@ export async function GET(
             },
           },
         },
-        admin: {
-          select: {
-            id: true,
-            name: true,
-            role: true,
-            permissions: true,
-            department: true,
-          },
-        },
         // Include counts
         _count: {
           select: {
@@ -173,11 +164,11 @@ export async function GET(
 // PUT /api/users/[id] - Update user (Admin only)
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -187,7 +178,7 @@ export async function PUT(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     // Check if user exists
@@ -198,7 +189,6 @@ export async function PUT(
         student: true,
         guardian: true,
         moderator: true,
-        admin: true,
       },
     });
 
@@ -303,14 +293,11 @@ export async function PUT(
           });
           break;
 
-        case "ADMIN":
-        case "SUPER_ADMIN":
-          await tx.admin.update({
+        case "TEACHER":
+          await tx.teacher.update({
             where: { userId: id },
             data: {
               name: body.name,
-              permissions: body.permissions,
-              department: body.department,
             },
           });
           break;
@@ -340,11 +327,11 @@ export async function PUT(
 // DELETE /api/users/[id] - Delete user (Admin only)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -354,7 +341,7 @@ export async function DELETE(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -400,11 +387,11 @@ export async function DELETE(
 // PATCH /api/users/[id]/toggle-status - Activate/Deactivate user
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -414,7 +401,7 @@ export async function PATCH(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     // Check if user exists
@@ -431,7 +418,7 @@ export async function PATCH(
     }
 
     // Don't allow deactivating SUPER_ADMIN
-    if (existingUser.role === "SUPER_ADMIN" && body.isActive === false) {
+    if (existingUser.role === "TEACHER" && body.isActive === false) {
       return sendResponse({
         success: false,
         message: "Cannot deactivate SUPER_ADMIN account",

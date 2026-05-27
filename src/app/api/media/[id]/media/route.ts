@@ -14,10 +14,7 @@ export async function GET(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
       "GUARDIAN",
     );
 
@@ -59,10 +56,7 @@ export async function POST(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
     );
 
     if (!auth.success) {
@@ -89,8 +83,6 @@ export async function POST(
 
     // Check permission
     const canEdit =
-      auth.user?.role === "ADMIN" ||
-      auth.user?.role === "SUPER_ADMIN" ||
       (auth.user?.role === "TEACHER" &&
         existingPost.teacherId === auth.user.teacherId) ||
       (auth.user?.role === "STUDENT" &&

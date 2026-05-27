@@ -20,8 +20,6 @@ enum UserRole {
   MODERATOR
   STUDENT
   GUARDIAN
-  ADMIN
-  SUPER_ADMIN
 }
 
 enum EnrollmentStatus {
@@ -286,7 +284,6 @@ model User {
   moderator          Moderator?
   student            Student?
   guardian           Guardian?
-  admin              Admin?
 
   // Notifications
   notifications           Notification[]
@@ -339,13 +336,6 @@ model User {
   experience    Int? // Years of experience
   achievements  String[]
 
-  // Professional
-  employeeId      String? @unique
-  joiningDate     DateTime?
-  specializations String[]
-  researchPapers  Json?   // List of publications
-  awards          String[]
-
   // Business
   gstNumber   String?
   panNumber   String?
@@ -392,14 +382,12 @@ model User {
   doubts               Doubt[]               @relation("TeacherDoubts")
   doubtAnswers         DoubtAnswer[]         @relation("TeacherDoubtAnswers")
   assignments          Assignment[]          @relation("TeacherAssignments")
-  reviews              TeacherReview[]
   certificates         Certificate[]         @relation("TeacherCertificates")
   liveSessions         LiveSession[]         @relation("TeacherSessions")
   announcements        Announcement[]        @relation("TeacherAnnouncements")
 
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
-  teacherSubscriptions TeacherSubscription[]
 }
 // Moderator Profile
 model Moderator {
@@ -408,7 +396,7 @@ model Moderator {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   name        String
-  assignedBy  String // Teacher/Admin ID who assigned them
+  assignedBy  String // Teacher ID who assigned them
   permissions Json // Granular permissions
 
   // Assigned batches
@@ -418,22 +406,6 @@ model Moderator {
   lastActive     DateTime?
   actionsTaken   Int @default(0)
   resolvedIssues Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// Admin Profile
-model Admin {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  name          String
-  role          String 
-  permissions   Json
-  department    String?
-  lastActive    DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -496,7 +468,6 @@ model Student {
   doubts           Doubt[]           @relation("StudentDoubts")
   doubtAnswers     DoubtAnswer[]     @relation("StudentDoubtAnswers")
   submissions      AssignmentSubmission[]
-  reviews          TeacherReview[]
   batchReviews     BatchReview[]
   liveSessionAttendance LiveSessionAttendance[] @relation("StudentSessionAttendance")
   postShares       PostShare[]       @relation("StudentPostShares")
@@ -608,13 +579,15 @@ model Batch {
   teacherId String
   teacher   Teacher @relation("TeacherBatches", fields: [teacherId], references: [id])
 
-  moderators Moderator[] @relation("ModeratorBatches")
+
 
   // Batch Details
   subject     String
   description String?
   mode        BatchMode @default(ONLINE)
   language    String?   @default("English")
+
+  moderators Moderator[] @relation("ModeratorBatches")
 
   // Capacity
   maxStudents        Int?
@@ -812,24 +785,6 @@ model BatchReview {
   updatedAt DateTime @updatedAt
 
   @@unique([batchId, studentId])
-}
-
-// Teacher Reviews
-model TeacherReview {
-  id        String @id @default(cuid())
-  teacherId String
-  teacher   Teacher @relation(fields: [teacherId], references: [id])
-  studentId String
-  student   Student @relation(fields: [studentId], references: [id])
-
-  rating     Int // 1-5
-  comment    String?
-  categories Json? // {clarity: 5, patience: 4, knowledge: 5}
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([teacherId, studentId])
 }
 
 // ==================================================
@@ -2447,7 +2402,6 @@ model Coupon {
   maxDiscount       Float?
   applicableBatches String[] // Batch IDs
   applicableCourses String[] // Course IDs
-  applicablePlans   String[] // Subscription plan IDs
 
   // Per user
   perUserLimit Int @default(1)
@@ -2461,64 +2415,6 @@ model Coupon {
 
   @@index([code])
   @@index([validFrom, validUntil])
-}
-
-// ==================================================
-// SUBSCRIPTION PLANS
-// ==================================================
-
-model SubscriptionPlan {
-  id           String @id @default(cuid())
-  name         String
-  description  String?
-  price        Float
-  durationDays Int
-  billingCycle String // MONTHLY, QUARTERLY, YEARLY
-
-  maxStudents Int?
-  maxBatches  Int?
-  maxCourses  Int?
-  storage     Int? // in GB
-
-  features    Json // Feature list with limits
-
-  isPopular   Boolean @default(false)
-  isActive    Boolean @default(true)
-
-  createdAt            DateTime              @default(now())
-  teacherSubscriptions TeacherSubscription[]
-}
-
-model TeacherSubscription {
-  id String @id @default(cuid())
-
-  teacherId String
-  teacher   Teacher @relation(fields: [teacherId], references: [id])
-
-  planId String
-  plan   SubscriptionPlan @relation(fields: [planId], references: [id])
-
-  startDate DateTime
-  endDate   DateTime
-  nextBillingDate DateTime?
-
-  isActive   Boolean @default(true)
-  autoRenew  Boolean @default(true)
-
-  paymentId     String?
-  paymentStatus PaymentStatus @default(PENDING)
-  amountPaid    Float?
-  invoiceUrl    String?
-
-  usageStats    Json? // Current usage against limits
-
-  metadata  Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([teacherId])
-  @@index([endDate])
 }
 
 // ==================================================

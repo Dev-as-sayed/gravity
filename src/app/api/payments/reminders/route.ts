@@ -7,7 +7,7 @@ import { sendResponse } from "@/lib/sendResponse";
 // POST /api/payments/reminders - Send payment reminders
 export async function POST(req: NextRequest) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -34,7 +34,16 @@ export async function POST(req: NextRequest) {
         remindersSent: { lt: 3 }, // Max 3 reminders
       },
       include: {
-        student: true,
+        student: {
+          include: {
+            user: {
+              select: {
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
         enrollment: {
           include: {
             batch: {
@@ -62,8 +71,8 @@ export async function POST(req: NextRequest) {
         return {
           paymentId: payment.id,
           studentName: payment.student.name,
-          studentEmail: payment.student.email,
-          studentPhone: payment.student.phone,
+          studentEmail: payment.student.user.email,
+          studentPhone: payment.student.user.phone,
           batchName: payment.enrollment.batch.name,
           dueDate: payment.dueDate,
           amount: payment.amount,

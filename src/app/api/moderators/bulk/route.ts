@@ -8,7 +8,7 @@ import { sendResponse } from "@/lib/sendResponse";
 export async function POST(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -68,8 +68,8 @@ export async function POST(req: NextRequest) {
 
         return sendResponse({
           success: true,
-          message: `${result.count} moderators ${action}d successfully`,
-          data: { count: result.count },
+          message: `${result!.count} moderators ${action}d successfully`,
+          data: { count: result!.count },
         });
 
       case "delete":

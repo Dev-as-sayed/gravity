@@ -7,7 +7,7 @@ import { sendResponse } from "@/lib/sendResponse";
 // POST /api/notes/bulk - Bulk operations on notes
 export async function POST(req: NextRequest) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -127,8 +127,8 @@ export async function POST(req: NextRequest) {
 
     return sendResponse({
       success: true,
-      message: `${result.count} notes ${action}ed successfully`,
-      data: { count: result.count },
+      message: `${result!.count} notes ${action}ed successfully`,
+      data: { count: result!.count },
     });
   } catch (error) {
     console.error("Error in bulk note operation:", error);

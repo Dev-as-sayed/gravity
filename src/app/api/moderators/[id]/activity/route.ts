@@ -7,11 +7,11 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/moderators/[id]/activity - Get moderator activity
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - ADMIN, SUPER_ADMIN can view
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -21,7 +21,7 @@ export async function GET(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const moderator = await prisma.moderator.findUnique({
       where: { id },
@@ -117,11 +117,11 @@ export async function GET(
 // PATCH /api/moderators/[id]/activity - Update moderator activity
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can update
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -131,7 +131,7 @@ export async function PATCH(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     // Check if moderator exists

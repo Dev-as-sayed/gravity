@@ -7,16 +7,13 @@ import { sendResponse } from "@/lib/sendResponse";
 // POST /api/batches/[id]/enroll - Enroll in a batch
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const auth = await authenticate(
       req,
       "STUDENT",
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "MODERATOR",
+      "TEACHER", "MODERATOR",
     );
 
     if (!auth.success) {
@@ -27,7 +24,7 @@ export async function POST(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     // Check if batch exists
@@ -77,7 +74,7 @@ export async function POST(
     }
     // For admins, teachers, moderators - they need to provide a studentId
     else if (
-      ["ADMIN", "SUPER_ADMIN", "TEACHER", "MODERATOR"].includes(
+      ["TEACHER", "MODERATOR"].includes(
         auth.user?.role || "",
       )
     ) {
@@ -199,10 +196,10 @@ export async function POST(
 // GET /api/batches/[id]/enrollments - Get batch enrollments
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -212,7 +209,7 @@ export async function GET(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if batch exists
     const batch = await prisma.batch.findUnique({

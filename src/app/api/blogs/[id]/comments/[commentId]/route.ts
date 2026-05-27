@@ -1,18 +1,18 @@
-// src/app/api/blogs/[blogId]/comments/[commentId]/route.ts
+// src/app/api/blogs/[id]/comments/[commentId]/route.ts
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/apiAuthenticator";
 import { sendResponse } from "@/lib/sendResponse";
 
-// GET /api/blogs/[blogId]/comments/[commentId] - Get single comment
+// GET /api/blogs/[id]/comments/[commentId] - Get single comment
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ blogId: string; commentId: string }> },
+  { params }: { params: Promise<{ id: string; commentId: string }> },
 ) {
   try {
-    const { blogId, commentId } = await params;
+    const { id, commentId } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -25,7 +25,7 @@ export async function GET(
     const comment = await prisma.blogComment.findFirst({
       where: {
         id: commentId,
-        blogId,
+        blogId: id,
       },
     });
 
@@ -52,15 +52,15 @@ export async function GET(
   }
 }
 
-// PUT /api/blogs/[blogId]/comments/[commentId] - Update comment
+// PUT /api/blogs/[id]/comments/[commentId] - Update comment
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ blogId: string; commentId: string }> },
+  { params }: { params: Promise<{ id: string; commentId: string }> },
 ) {
   try {
-    const { blogId, commentId } = await params;
+    const { id, commentId } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -75,7 +75,7 @@ export async function PUT(
     const comment = await prisma.blogComment.findFirst({
       where: {
         id: commentId,
-        blogId,
+        blogId: id,
       },
     });
 
@@ -111,15 +111,15 @@ export async function PUT(
   }
 }
 
-// DELETE /api/blogs/[blogId]/comments/[commentId] - Delete comment
+// DELETE /api/blogs/[id]/comments/[commentId] - Delete comment
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ blogId: string; commentId: string }> },
+  { params }: { params: Promise<{ id: string; commentId: string }> },
 ) {
   try {
-    const { blogId, commentId } = await params;
+    const { id, commentId } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -132,7 +132,7 @@ export async function DELETE(
     const comment = await prisma.blogComment.findFirst({
       where: {
         id: commentId,
-        blogId,
+        blogId: id,
       },
     });
 
@@ -162,15 +162,15 @@ export async function DELETE(
   }
 }
 
-// PATCH /api/blogs/[blogId]/comments/[commentId]/approve - Approve comment
+// PATCH /api/blogs/[id]/comments/[commentId]/approve - Approve comment
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ blogId: string; commentId: string }> },
+  { params }: { params: Promise<{ id: string; commentId: string }> },
 ) {
   try {
-    const { blogId, commentId } = await params;
+    const { id, commentId } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -185,7 +185,7 @@ export async function PATCH(
     const comment = await prisma.blogComment.findFirst({
       where: {
         id: commentId,
-        blogId,
+        blogId: id,
       },
     });
 

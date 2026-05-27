@@ -7,15 +7,12 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/batches/[id] - Get single batch
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
     );
 
     if (!auth.success) {
@@ -26,7 +23,7 @@ export async function GET(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const batch = await prisma.batch.findUnique({
       where: { id },
@@ -56,7 +53,7 @@ export async function GET(
           },
         },
         enrollments:
-          auth.user?.role === "ADMIN" || auth.user?.role === "TEACHER"
+          auth.user?.role === "TEACHER"
             ? {
                 include: {
                   student: {
@@ -163,10 +160,10 @@ export async function GET(
 // PUT /api/batches/[id] - Update batch
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -176,7 +173,7 @@ export async function PUT(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     // Check if batch exists
@@ -263,10 +260,10 @@ export async function PUT(
 // DELETE /api/batches/[id] - Delete batch
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -276,7 +273,7 @@ export async function DELETE(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if batch exists
     const existingBatch = await prisma.batch.findUnique({

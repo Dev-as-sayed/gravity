@@ -14,10 +14,7 @@ export async function GET(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
       "GUARDIAN",
     );
 
@@ -44,7 +41,7 @@ export async function GET(
         },
         comments: {
           where:
-            auth.user?.role === "TEACHER" || auth.user?.role === "ADMIN"
+            auth.user?.role === "TEACHER"
               ? {}
               : { isApproved: true },
           orderBy: { createdAt: "desc" },
@@ -77,12 +74,10 @@ export async function GET(
       });
     }
 
-    // If not published and not author/admin, deny access
+    // If not published, only teacher-owner can view
     if (
       !blog.isPublished &&
-      auth.user?.role !== "ADMIN" &&
-      auth.user?.role !== "SUPER_ADMIN" &&
-      (auth.user?.role !== "TEACHER" || blog.teacherId !== auth.user.teacherId)
+      auth.user?.role !== "TEACHER"
     ) {
       return sendResponse({
         success: false,
@@ -120,7 +115,7 @@ export async function PUT(
   try {
     const { id } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -212,7 +207,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -276,7 +271,7 @@ export async function PATCH(
   try {
     const { id } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({

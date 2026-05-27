@@ -47,7 +47,7 @@ export interface Moderator {
     };
   }>;
   assigner?: {
-    type: "TEACHER" | "ADMIN";
+    type: "TEACHER";
     id: string;
     name: string;
     email?: string;

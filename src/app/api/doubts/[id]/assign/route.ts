@@ -12,7 +12,7 @@ export async function POST(
   try {
     const { id } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "MODERATOR");
+    const auth = await authenticate(req, "TEACHER", "MODERATOR");
 
     if (!auth.success) {
       return sendResponse({

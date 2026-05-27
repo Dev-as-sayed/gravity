@@ -9,10 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
       "GUARDIAN",
     );
 
@@ -139,7 +136,7 @@ export async function GET(req: NextRequest) {
 // POST /api/blogs - Create a new blog
 export async function POST(req: NextRequest) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({

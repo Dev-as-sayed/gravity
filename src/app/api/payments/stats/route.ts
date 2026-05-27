@@ -8,7 +8,7 @@ import { Prisma } from "@/generated/prisma/client";
 // GET /api/payments/stats - Get payment statistics
 export async function GET(req: NextRequest) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({

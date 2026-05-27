@@ -14,10 +14,7 @@ export async function GET(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
       "GUARDIAN",
     );
 
@@ -104,7 +101,7 @@ export async function GET(
     ) {
       const enrollment = await prisma.enrollment.findFirst({
         where: {
-          studentId: auth.user.studentId,
+          studentId: auth.user.studentId!,
           batchId: post.batchId,
           status: "APPROVED",
         },
@@ -164,10 +161,7 @@ export async function PUT(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
     );
 
     if (!auth.success) {
@@ -194,8 +188,6 @@ export async function PUT(
 
     // Check permission
     const canEdit =
-      auth.user?.role === "ADMIN" ||
-      auth.user?.role === "SUPER_ADMIN" ||
       (auth.user?.role === "TEACHER" &&
         existingPost.teacherId === auth.user.teacherId) ||
       (auth.user?.role === "STUDENT" &&
@@ -266,10 +258,7 @@ export async function DELETE(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
     );
 
     if (!auth.success) {
@@ -294,8 +283,6 @@ export async function DELETE(
 
     // Check permission
     const canDelete =
-      auth.user?.role === "ADMIN" ||
-      auth.user?.role === "SUPER_ADMIN" ||
       (auth.user?.role === "TEACHER" &&
         existingPost.teacherId === auth.user.teacherId) ||
       (auth.user?.role === "STUDENT" &&

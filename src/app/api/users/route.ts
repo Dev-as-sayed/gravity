@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/apiAuthenticator";
 import { sendResponse } from "@/lib/sendResponse";
-import { tr } from "zod/locales";
+import { hashPassword } from "@/lib/password";
 import { Prisma } from "@/generated/prisma/client";
 
 // GET /api/users - Get all users (Admin only)
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     console.log("Fetching users with query:", req.url);
 
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
           updatedAt: true,
           // Include role-specific data (only if needed)
           teacher:
-            auth.user?.role === "SUPER_ADMIN"
+            auth.user?.role === "TEACHER"
               ? {
                   select: {
                     id: true,
@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
                 }
               : false,
           student:
-            auth.user?.role === "SUPER_ADMIN"
+            auth.user?.role === "TEACHER"
               ? {
                   select: {
                     id: true,
@@ -137,7 +137,7 @@ export async function GET(req: NextRequest) {
                 }
               : false,
           guardian:
-            auth.user?.role === "SUPER_ADMIN"
+            auth.user?.role === "TEACHER"
               ? {
                   select: {
                     id: true,
@@ -147,21 +147,11 @@ export async function GET(req: NextRequest) {
                 }
               : false,
           moderator:
-            auth.user?.role === "SUPER_ADMIN"
+            auth.user?.role === "TEACHER"
               ? {
                   select: {
                     id: true,
                     name: true,
-                  },
-                }
-              : false,
-          admin:
-            auth.user?.role === "SUPER_ADMIN"
-              ? {
-                  select: {
-                    id: true,
-                    name: true,
-                    role: true,
                   },
                 }
               : false,
@@ -209,7 +199,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -252,8 +242,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Hash password
-    const bcrypt = require("bcryptjs");
-    const hashedPassword = await bcrypt.hash(body.password, 10);
+    const hashedPassword = await hashPassword(body.password);
 
     // Create user with role-specific profile
     const user = await prisma.$transaction(async (tx) => {
@@ -336,24 +325,12 @@ export async function POST(req: NextRequest) {
             },
           });
           break;
-
-        case "ADMIN":
-        case "SUPER_ADMIN":
-          await tx.admin.create({
-            data: {
-              userId: newUser.id,
-              name: body.name,
-              role: body.role,
-              permissions: body.permissions || {},
-              department: body.department,
-            },
-          });
-          break;
       }
 
       // Create notification preferences
       await tx.notificationPreference.create({
         data: {
+          preferences: {},
           userId: newUser.id,
         },
       });

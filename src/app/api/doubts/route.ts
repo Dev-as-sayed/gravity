@@ -9,10 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
       "MODERATOR",
     );
 
@@ -142,7 +139,7 @@ export async function POST(req: NextRequest) {
   try {
     console.log("hit onl =======================");
 
-    const auth = await authenticate(req, "STUDENT", "SUPER_ADMIN", "ADMIN");
+    const auth = await authenticate(req, "STUDENT", "TEACHER");
 
     if (!auth.success || !auth.user?.studentId) {
       return sendResponse({

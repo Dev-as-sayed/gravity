@@ -250,9 +250,10 @@ export const examApi = baseApi.injectEndpoints({
     /**
      * Get exam statistics
      */
-    getExamStats: builder.query<{ data: ExamStats }, void>({
+    getExamStats: builder.query<ExamStats, void>({
       query: () => "/exams/stats",
       providesTags: ["ExamStats"],
+      transformResponse: (res: any) => res.data,
     }),
 
     // ==================== EXAM RESULT QUERIES ====================

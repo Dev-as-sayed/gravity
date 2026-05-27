@@ -7,13 +7,15 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/students/[id]/progress - Get student progress
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    // Authenticate - ADMIN, SUPER_ADMIN, or the student themselves
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const { id } = await params;
 
-    if (!auth.success && auth.user?.studentId !== params.id) {
+    // Authenticate - TEACHER or the student themselves
+    const auth = await authenticate(req, "TEACHER", "STUDENT");
+
+    if (!auth.success) {
       return sendResponse({
         success: false,
         message: "Unauthorized",
@@ -21,7 +23,13 @@ export async function GET(
       });
     }
 
-    const { id } = params;
+    if (auth.user.role === "STUDENT" && auth.user.studentId !== id) {
+      return sendResponse({
+        success: false,
+        message: "Unauthorized",
+        status: 401,
+      });
+    }
 
     // Get student progress data
     const [

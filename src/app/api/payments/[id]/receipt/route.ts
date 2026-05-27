@@ -14,10 +14,7 @@ export async function GET(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
     );
 
     if (!auth.success) {
@@ -31,7 +28,17 @@ export async function GET(
     const payment = await prisma.payment.findUnique({
       where: { id },
       include: {
-        student: true,
+        student: {
+          include: {
+            user: {
+              select: {
+                email: true,
+                phone: true,
+                address: true,
+              },
+            },
+          },
+        },
         enrollment: {
           include: {
             batch: {
@@ -71,9 +78,9 @@ export async function GET(
       invoiceNumber: payment.invoiceNumber,
       paymentDate: payment.paymentDate,
       studentName: payment.student.name,
-      studentEmail: payment.student.email,
-      studentPhone: payment.student.phone,
-      studentAddress: payment.student.address,
+      studentEmail: payment.student.user.email,
+      studentPhone: payment.student.user.phone,
+      studentAddress: payment.student.user.address,
       batchName: payment.enrollment.batch.name,
       batchSubject: payment.enrollment.batch.subject,
       amount: payment.amount,

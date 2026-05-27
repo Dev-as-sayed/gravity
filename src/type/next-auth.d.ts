@@ -14,7 +14,6 @@ declare module "next-auth" {
     studentId?: string | null;
     guardianId?: string | null;
     moderatorId?: string | null;
-    adminId?: string | null;
   }
 
   interface Session {
@@ -29,7 +28,6 @@ declare module "next-auth" {
       studentId?: string | null;
       guardianId?: string | null;
       moderatorId?: string | null;
-      adminId?: string | null;
     };
   }
 }
@@ -46,6 +44,5 @@ declare module "next-auth/jwt" {
     studentId?: string | null;
     guardianId?: string | null;
     moderatorId?: string | null;
-    adminId?: string | null;
   }
 }

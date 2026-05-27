@@ -249,9 +249,9 @@ export default function MediaHome() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     {getMediaIcon(post.type)}
                   </div>
-                  {post.type === "VIDEO" && post.metadata?.duration && (
+                  {(post as any).type === "VIDEO" && (post as any).metadata?.duration && (
                     <span className="absolute bottom-2 right-2 px-2 py-1 bg-black/60 rounded text-xs text-white">
-                      {post.metadata.duration}
+                      {(post as any).metadata.duration}
                     </span>
                   )}
                 </div>

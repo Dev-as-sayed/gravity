@@ -14,10 +14,7 @@ export async function GET(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
       "GUARDIAN",
     );
 
@@ -38,10 +35,8 @@ export async function GET(
 
     const where: any = { blogId: id };
 
-    // Teachers and admins can see all comments, others only approved
+    // Teachers can see all comments, others only approved
     if (
-      auth.user?.role !== "ADMIN" &&
-      auth.user?.role !== "SUPER_ADMIN" &&
       auth.user?.role !== "TEACHER"
     ) {
       where.isApproved = true;
@@ -94,10 +89,7 @@ export async function POST(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
       "GUARDIAN",
     );
 
@@ -140,10 +132,8 @@ export async function POST(
       });
     }
 
-    // Auto-approve for teachers and admins
+    // Auto-approve for teachers
     const isApproved =
-      auth.user?.role === "ADMIN" ||
-      auth.user?.role === "SUPER_ADMIN" ||
       auth.user?.role === "TEACHER";
 
     const comment = await prisma.blogComment.create({

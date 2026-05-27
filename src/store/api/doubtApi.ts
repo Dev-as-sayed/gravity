@@ -194,9 +194,10 @@ export const doubtApi = baseApi.injectEndpoints({
     /**
      * Get doubt statistics
      */
-    getDoubtStats: builder.query<{ data: DoubtStats }, void>({
+    getDoubtStats: builder.query<DoubtStats, void>({
       query: () => "/doubts/stats",
       providesTags: ["DoubtStats"],
+      transformResponse: (res: any) => res.data,
     }),
 
     // ==================== ANSWER QUERIES ====================

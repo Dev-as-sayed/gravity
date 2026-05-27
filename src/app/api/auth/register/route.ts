@@ -1,42 +1,37 @@
-// app/api/auth/register/route.ts
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { hashPassword, validatePasswordComplexity } from "@/lib/password";
 
-const prisma = new PrismaClient();
-
-// Validation schema
 const registerSchema = z.object({
   email: z.string().email("Invalid email format"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   name: z.string().min(2, "Name must be at least 2 characters"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  role: z
-    .enum(["STUDENT", "TEACHER", "GUARDIAN", "MODERATOR", "ADMIN"])
-    .default("STUDENT"),
-  // Student specific fields
+  role: z.enum(["STUDENT", "GUARDIAN"]).default("STUDENT"),
   dateOfBirth: z.string().optional(),
   gender: z.enum(["MALE", "FEMALE"]).optional(),
   institute: z.string().optional(),
   educationLevel: z.string().optional(),
   class: z.string().optional(),
   board: z.string().optional(),
-  // Guardian specific
-  relationship: z.string().optional(),
-  // Teacher specific
-  qualification: z.string().optional(),
-  expertise: z.array(z.string()).optional(),
+  relationship: z.string().min(1, "Relationship is required"),
 });
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Validate input
     const validatedData = registerSchema.parse(body);
 
-    // Check if user already exists
+    const complexityError = validatePasswordComplexity(validatedData.password);
+    if (complexityError) {
+      return NextResponse.json(
+        { error: complexityError },
+        { status: 400 },
+      );
+    }
+
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [{ email: validatedData.email }, { phone: validatedData.phone }],
@@ -50,12 +45,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+    const hashedPassword = await hashPassword(validatedData.password);
 
-    // Create user with role-specific profile
     const user = await prisma.$transaction(async (tx) => {
-      // Create base user
       const newUser = await tx.user.create({
         data: {
           email: validatedData.email,
@@ -70,7 +62,6 @@ export async function POST(request: Request) {
         },
       });
 
-      // Create role-specific profile
       switch (validatedData.role) {
         case "STUDENT":
           await tx.student.create({
@@ -89,17 +80,6 @@ export async function POST(request: Request) {
           });
           break;
 
-        case "TEACHER":
-          await tx.teacher.create({
-            data: {
-              userId: newUser.id,
-              name: validatedData.name,
-              qualification: validatedData.qualification,
-              expertise: validatedData.expertise || [],
-            },
-          });
-          break;
-
         case "GUARDIAN":
           await tx.guardian.create({
             data: {
@@ -111,14 +91,10 @@ export async function POST(request: Request) {
           break;
       }
 
-      // Create notification preferences
       await tx.notificationPreference.create({
-        data: {
-          userId: newUser.id,
-        },
+        data: { userId: newUser.id, preferences: {} },
       });
 
-      // Log activity
       await tx.userActivity.create({
         data: {
           userId: newUser.id,
@@ -130,7 +106,6 @@ export async function POST(request: Request) {
       return newUser;
     });
 
-    // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
     return NextResponse.json(
@@ -143,7 +118,7 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation error", details: error.errors },
+        { error: "Validation error", details: error.issues },
         { status: 400 },
       );
     }

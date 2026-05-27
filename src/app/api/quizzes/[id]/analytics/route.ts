@@ -11,7 +11,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -63,7 +63,7 @@ export async function GET(
       `,
 
       // Time analysis
-      prisma.$queryRaw`
+      prisma.$queryRaw<Array<{ avg_time_seconds: number | null; min_time_seconds: number | null; max_time_seconds: number | null }>>`
         SELECT 
           AVG(EXTRACT(EPOCH FROM (qa."endTime" - qa."startTime"))) as avg_time_seconds,
           MIN(EXTRACT(EPOCH FROM (qa."endTime" - qa."startTime"))) as min_time_seconds,

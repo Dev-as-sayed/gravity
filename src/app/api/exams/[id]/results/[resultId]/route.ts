@@ -1,23 +1,20 @@
-// src/app/api/exams/[examId]/results/[resultId]/route.ts
+// src/app/api/exams/[id]/results/[resultId]/route.ts
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/apiAuthenticator";
 import { sendResponse } from "@/lib/sendResponse";
 
-// GET /api/exams/[examId]/results/[resultId] - Get single result
+// GET /api/exams/[id]/results/[resultId] - Get single result
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ examId: string; resultId: string }> },
+  { params }: { params: Promise<{ id: string; resultId: string }> },
 ) {
   try {
-    const { examId, resultId } = await params;
+    const { id, resultId } = await params;
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "STUDENT",
+      "TEACHER", "STUDENT",
     );
 
     if (!auth.success) {
@@ -31,7 +28,7 @@ export async function GET(
     const result = await prisma.examResult.findFirst({
       where: {
         id: resultId,
-        examId,
+        examId: id,
       },
       include: {
         student: {
@@ -89,15 +86,15 @@ export async function GET(
   }
 }
 
-// PUT /api/exams/[examId]/results/[resultId] - Update result
+// PUT /api/exams/[id]/results/[resultId] - Update result
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ examId: string; resultId: string }> },
+  { params }: { params: Promise<{ id: string; resultId: string }> },
 ) {
   try {
-    const { examId, resultId } = await params;
+    const { id, resultId } = await params;
 
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -112,7 +109,7 @@ export async function PUT(
     const result = await prisma.examResult.findFirst({
       where: {
         id: resultId,
-        examId,
+        examId: id,
       },
     });
 
@@ -156,13 +153,13 @@ export async function PUT(
   }
 }
 
-// POST /api/exams/[examId]/results/[resultId]/recheck - Request recheck
+// POST /api/exams/[id]/results/[resultId]/recheck - Request recheck
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ examId: string; resultId: string }> },
+  { params }: { params: Promise<{ id: string; resultId: string }> },
 ) {
   try {
-    const { examId, resultId } = await params;
+    const { id, resultId } = await params;
 
     const auth = await authenticate(req, "STUDENT");
 
@@ -179,7 +176,7 @@ export async function POST(
     const result = await prisma.examResult.findFirst({
       where: {
         id: resultId,
-        examId,
+        examId: id,
         studentId: auth.user.studentId,
       },
     });
@@ -193,7 +190,7 @@ export async function POST(
     }
 
     const exam = await prisma.exam.findUnique({
-      where: { id: examId },
+      where: { id: id },
     });
 
     if (!exam?.allowRecheck) {

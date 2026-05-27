@@ -6,6 +6,7 @@ import { useFrame } from "@react-three/fiber";
 import {
   Text3D,
   Float,
+  Html,
   Sparkles,
   MeshDistortMaterial,
 } from "@react-three/drei";
@@ -187,7 +188,7 @@ export default function FormulaScene({
         const z = Math.sin(angle) * sat.radius;
         return (
           <Float key={idx} speed={1} floatIntensity={0.8}>
-            <html
+            <Html
               position={[x, Math.sin(angle * 2) * 0.3, z]}
               center
               transform

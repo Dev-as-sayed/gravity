@@ -7,7 +7,7 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/blogs/stats - Get blog statistics
 export async function GET(req: NextRequest) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN", "TEACHER");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({

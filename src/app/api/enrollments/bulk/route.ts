@@ -7,7 +7,7 @@ import { sendResponse } from "@/lib/sendResponse";
 // POST /api/enrollments/bulk - Bulk operations on enrollments
 export async function POST(req: NextRequest) {
   try {
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -140,8 +140,8 @@ export async function POST(req: NextRequest) {
 
     return sendResponse({
       success: true,
-      message: `${result.count} enrollments ${action}d successfully`,
-      data: { count: result.count },
+      message: `${result!.count} enrollments ${action}d successfully`,
+      data: { count: result!.count },
     });
   } catch (error) {
     console.error("Error in bulk enrollment operation:", error);

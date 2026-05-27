@@ -14,10 +14,7 @@ export async function POST(
 
     const auth = await authenticate(
       req,
-      "ADMIN",
-      "SUPER_ADMIN",
-      "TEACHER",
-      "MODERATOR",
+      "TEACHER", "MODERATOR",
     );
 
     if (!auth.success) {

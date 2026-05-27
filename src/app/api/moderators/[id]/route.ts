@@ -2,17 +2,16 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/apiAuthenticator";
-import bcrypt from "bcryptjs";
 import { sendResponse } from "@/lib/sendResponse";
 
 // GET /api/moderators/[id] - Get single moderator by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - ADMIN, SUPER_ADMIN can view any moderator
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -22,7 +21,7 @@ export async function GET(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const moderator = await prisma.moderator.findUnique({
       where: { id },
@@ -91,23 +90,6 @@ export async function GET(
       });
       if (teacher) {
         assigner = { type: "TEACHER", ...teacher };
-      } else {
-        const admin = await prisma.admin.findUnique({
-          where: { id: moderator.assignedBy },
-          select: {
-            id: true,
-            name: true,
-            role: true,
-            user: {
-              select: {
-                email: true,
-              },
-            },
-          },
-        });
-        if (admin) {
-          assigner = { type: "ADMIN", ...admin };
-        }
       }
     }
 
@@ -129,11 +111,11 @@ export async function GET(
 // PUT /api/moderators/[id] - Update moderator (Admin only)
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can update
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -143,7 +125,7 @@ export async function PUT(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     // Check if moderator exists
@@ -236,11 +218,11 @@ export async function PUT(
 // PATCH /api/moderators/[id]/status - Toggle moderator active status
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can toggle status
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -250,7 +232,7 @@ export async function PATCH(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     if (body.isActive === undefined) {
@@ -309,11 +291,11 @@ export async function PATCH(
 // DELETE /api/moderators/[id] - Delete moderator (Admin only)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can delete
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -323,7 +305,7 @@ export async function DELETE(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if moderator exists
     const moderator = await prisma.moderator.findUnique({
@@ -345,10 +327,16 @@ export async function DELETE(
     // Delete moderator and associated user
     await prisma.$transaction(async (tx) => {
       // Remove moderator from batches first
-      await tx.batch.updateMany({
+      const batches = await tx.batch.findMany({
         where: { moderators: { some: { id: moderator.id } } },
-        data: { moderators: { disconnect: { id: moderator.id } } },
+        select: { id: true },
       });
+      for (const batch of batches) {
+        await tx.batch.update({
+          where: { id: batch.id },
+          data: { moderators: { disconnect: { id: moderator.id } } },
+        });
+      }
 
       // Delete moderator profile
       await tx.moderator.delete({

@@ -4,12 +4,10 @@ import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 
 export type UserRole =
-  | "SUPER_ADMIN"
-  | "ADMIN"
   | "TEACHER"
+  | "MODERATOR"
   | "STUDENT"
-  | "GUARDIAN"
-  | "MODERATOR";
+  | "GUARDIAN";
 
 export interface AuthenticatedUser {
   id: string;
@@ -22,15 +20,11 @@ export interface AuthenticatedUser {
   studentId?: string | null;
   guardianId?: string | null;
   moderatorId?: string | null;
-  adminId?: string | null;
 }
 
-export interface AuthResult {
-  success: boolean;
-  user?: AuthenticatedUser;
-  error?: string;
-  status?: number;
-}
+export type AuthResult =
+  | { success: true; user: AuthenticatedUser }
+  | { success: false; error: string; status: number };
 
 export interface AuthOptions {
   requireVerified?: boolean;
@@ -50,10 +44,6 @@ class APIAuthenticator {
     return APIAuthenticator.instance;
   }
 
-  /**
-   * Authenticate a request with required roles
-   * Usage: authenticate(req, "ADMIN", "TEACHER")
-   */
   async authenticate(
     req: NextRequest,
     ...allowedRoles: UserRole[]
@@ -61,9 +51,6 @@ class APIAuthenticator {
     return this.authenticateWithOptions(req, { allowedRoles });
   }
 
-  /**
-   * Authenticate with additional options
-   */
   async authenticateWithOptions(
     req: NextRequest,
     options: {
@@ -73,7 +60,6 @@ class APIAuthenticator {
     } = {},
   ): Promise<AuthResult> {
     try {
-      // Get token from NextAuth
       const token = await getToken({
         req,
         secret: process.env.NEXTAUTH_SECRET,
@@ -87,7 +73,6 @@ class APIAuthenticator {
         };
       }
 
-      // Get user from database with role-specific data
       const user = await prisma.user.findUnique({
         where: { id: token.sub as string },
         include: {
@@ -95,7 +80,6 @@ class APIAuthenticator {
           student: true,
           guardian: true,
           moderator: true,
-          admin: true,
         },
       });
 
@@ -107,7 +91,6 @@ class APIAuthenticator {
         };
       }
 
-      // Check if user is active (if required)
       if (options.requireActive && !user.isActive) {
         return {
           success: false,
@@ -116,7 +99,6 @@ class APIAuthenticator {
         };
       }
 
-      // Check if email is verified (if required)
       if (options.requireVerified && !user.emailVerified) {
         return {
           success: false,
@@ -125,16 +107,10 @@ class APIAuthenticator {
         };
       }
 
-      // Check role-based access
       const userRole = user.role as UserRole;
 
       if (options.allowedRoles && options.allowedRoles.length > 0) {
-        // SUPER_ADMIN always has access to everything
-        if (userRole === "SUPER_ADMIN") {
-          // Allow access
-        }
-        // Check if user's role is in allowed roles
-        else if (!options.allowedRoles.includes(userRole)) {
+        if (!options.allowedRoles.includes(userRole)) {
           return {
             success: false,
             error: `Forbidden: Required roles: ${options.allowedRoles.join(", ")}. Your role: ${userRole}`,
@@ -143,7 +119,6 @@ class APIAuthenticator {
         }
       }
 
-      // Build authenticated user object
       const authenticatedUser: AuthenticatedUser = {
         id: user.id,
         email: user.email,
@@ -155,7 +130,6 @@ class APIAuthenticator {
         studentId: user.student?.id,
         guardianId: user.guardian?.id,
         moderatorId: user.moderator?.id,
-        adminId: user.admin?.id,
       };
 
       return {
@@ -172,34 +146,22 @@ class APIAuthenticator {
     }
   }
 
-  /**
-   * Check if user has any of the specified roles
-   */
   hasRole(
     user: AuthenticatedUser | null,
     roles: UserRole | UserRole[],
   ): boolean {
     if (!user) return false;
 
-    // SUPER_ADMIN has all roles
-    if (user.role === "SUPER_ADMIN") return true;
-
     const roleList = Array.isArray(roles) ? roles : [roles];
     return roleList.includes(user.role);
   }
 
-  /**
-   * Get role hierarchy - checks if user has sufficient role level
-   * SUPER_ADMIN > ADMIN > TEACHER > MODERATOR > STUDENT > GUARDIAN
-   */
   hasRoleLevel(user: AuthenticatedUser | null, minimumRole: UserRole): boolean {
     if (!user) return false;
 
     const roleHierarchy: Record<UserRole, number> = {
-      SUPER_ADMIN: 100,
-      ADMIN: 80,
-      TEACHER: 60,
-      MODERATOR: 40,
+      TEACHER: 100,
+      MODERATOR: 60,
       STUDENT: 20,
       GUARDIAN: 10,
     };
@@ -210,9 +172,6 @@ class APIAuthenticator {
     return userLevel >= requiredLevel;
   }
 
-  /**
-   * Check if user is the owner of a resource
-   */
   async isResourceOwner(
     user: AuthenticatedUser | null,
     resourceType: string,
@@ -220,8 +179,7 @@ class APIAuthenticator {
   ): Promise<boolean> {
     if (!user) return false;
 
-    // Admins and super admins are considered owners
-    if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") return true;
+    if (user.role === "TEACHER") return true;
 
     try {
       switch (resourceType) {
@@ -276,10 +234,8 @@ class APIAuthenticator {
   }
 }
 
-// Create a singleton instance
 export const apiAuthenticator = APIAuthenticator.getInstance();
 
-// Convenience function for easy usage
 export async function authenticate(
   req: NextRequest,
   ...allowedRoles: UserRole[]

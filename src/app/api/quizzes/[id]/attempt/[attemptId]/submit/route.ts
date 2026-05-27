@@ -117,7 +117,7 @@ export async function POST(
       const result = await tx.quizResult.create({
         data: {
           attemptId: updated.id,
-          studentId: auth.user.studentId,
+          studentId: auth.user.studentId!,
           quizId: id,
           totalMarks: attempt.quiz.totalMarks,
           obtainedMarks: totalScore,

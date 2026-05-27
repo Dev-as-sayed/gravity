@@ -12,13 +12,6 @@ export default withAuth(
       return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
 
-    if (
-      path.startsWith("/admin") &&
-      !["ADMIN", "SUPER_ADMIN"].includes(token?.role as string)
-    ) {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
-
     return NextResponse.next();
   },
   {
@@ -32,7 +25,6 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/teacher/:path*",
-    "/admin/:path*",
     "/profile/:path*",
     "/batches/:path*",
     "/courses/:path*",

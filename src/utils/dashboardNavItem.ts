@@ -62,34 +62,7 @@ export interface NavItem {
   badge?: number;
 }
 
-// Admin Navigation Items
-export const adminNavItems: NavItem[] = [
-  {
-    name: "Dashboard",
-    icon: LayoutDashboard,
-    path: "/dashboard/admin",
-  },
-  { name: "Users", icon: Users, path: "/dashboard/admin/users" },
-  { name: "Teachers", icon: GraduationCap, path: "/dashboard/admin/teachers" },
-  { name: "Students", icon: UserCheck, path: "/dashboard/admin/students" },
-  { name: "Guardians", icon: Heart, path: "/dashboard/admin/guardians" },
-  { name: "Moderators", icon: Shield, path: "/dashboard/admin/moderators" },
-  { name: "Courses", icon: BookOpen, path: "/dashboard/admin/courses" },
-  {
-    name: "Enrollments",
-    icon: ClipboardList,
-    path: "/dashboard/admin/enrollments",
-  },
-  { name: "Media", icon: FileText, path: "/dashboard/admin/media" },
-  { name: "Blogs", icon: Newspaper, path: "/dashboard/admin/blogs" },
-  { name: "Quizzes", icon: HelpCircle, path: "/dashboard/admin/quizzes" },
-  { name: "Exams", icon: ScrollText, path: "/dashboard/admin/exams" },
-  { name: "Notes", icon: File, path: "/dashboard/admin/notes" },
-  { name: "Doubts", icon: HelpCircle, path: "/dashboard/admin/doubts" },
-  { name: "Payments", icon: CreditCard, path: "/dashboard/admin/payments" },
-  { name: "Coupons", icon: Tag, path: "/dashboard/admin/coupons" },
-  { name: "Activity Logs", icon: Activity, path: "/dashboard/admin/logs" },
-];
+
 
 // Teacher Navigation Items
 export const teacherNavItems: NavItem[] = [
@@ -255,8 +228,6 @@ export const moderatorNavItems: NavItem[] = [
 
 // Map role to navigation items
 export const roleNavMap: Record<string, NavItem[]> = {
-  SUPER_ADMIN: adminNavItems,
-  ADMIN: adminNavItems,
   TEACHER: teacherNavItems,
   STUDENT: studentNavItems,
   GUARDIAN: guardianNavItems,

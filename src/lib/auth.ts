@@ -1,12 +1,14 @@
 // lib/auth.ts
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "./prisma"; // Import the singleton instance
-import bcrypt from "bcryptjs";
+import { prisma } from "./prisma";
+import { verifyPassword } from "./password";
+import { checkRateLimit } from "./rateLimiter";
 
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
+    maxAge: 24 * 60 * 60,
   },
   providers: [
     CredentialsProvider({
@@ -16,39 +18,41 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log("Authorizing user with email:", credentials?.email);
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Invalid credentials");
         }
 
+        const rateLimit = checkRateLimit(
+          `login:${credentials.email.toLowerCase()}`,
+        );
+        if (!rateLimit.allowed) {
+          const retryAfter = Math.ceil(
+            (rateLimit.resetAt - Date.now()) / 1000 / 60,
+          );
+          throw new Error(
+            `Too many attempts. Try again in ${retryAfter} minutes.`,
+          );
+        }
+
         const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
+          where: { email: credentials.email.toLowerCase() },
           include: {
             teacher: true,
             student: true,
             guardian: true,
             moderator: true,
-            admin: true,
           },
         });
 
-        console.log(
-          `User lookup for email: ${credentials.email} - Found: ${!!user}`,
-          user,
-        );
         if (!user || !user.password) {
           throw new Error("Invalid credentials");
         }
 
-        const isPasswordValid = await bcrypt.compare(
+        const isValid = await verifyPassword(
           credentials.password,
           user.password,
         );
-
-        if (!isPasswordValid) {
-          console.log(`Password mismatch for user: ${credentials.email}`);
+        if (!isValid) {
           throw new Error("Invalid credentials");
         }
 
@@ -56,7 +60,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Account is deactivated");
         }
 
-        // Update last login
         await prisma.user.update({
           where: { id: user.id },
           data: { lastLogin: new Date() },
@@ -73,7 +76,6 @@ export const authOptions: NextAuthOptions = {
           studentId: user.student?.id,
           guardianId: user.guardian?.id,
           moderatorId: user.moderator?.id,
-          adminId: user.admin?.id,
         };
       },
     }),
@@ -91,7 +93,6 @@ export const authOptions: NextAuthOptions = {
         token.studentId = user.studentId;
         token.guardianId = user.guardianId;
         token.moderatorId = user.moderatorId;
-        token.adminId = user.adminId;
       }
       return token;
     },
@@ -108,7 +109,6 @@ export const authOptions: NextAuthOptions = {
           studentId: token.studentId as string,
           guardianId: token.guardianId as string,
           moderatorId: token.moderatorId as string,
-          adminId: token.adminId as string,
         };
       }
       return session;

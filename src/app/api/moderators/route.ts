@@ -2,14 +2,14 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/apiAuthenticator";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "@/lib/password";
 import { sendResponse } from "@/lib/sendResponse";
 
 // GET /api/moderators - Get all moderators (Admin only)
 export async function GET(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -130,23 +130,6 @@ export async function GET(req: NextRequest) {
           });
           if (teacher) {
             assigner = { type: "TEACHER", ...teacher };
-          } else {
-            const admin = await prisma.admin.findUnique({
-              where: { id: mod.assignedBy },
-              select: {
-                id: true,
-                name: true,
-                role: true,
-                user: {
-                  select: {
-                    email: true,
-                  },
-                },
-              },
-            });
-            if (admin) {
-              assigner = { type: "ADMIN", ...admin };
-            }
           }
         }
         return { ...mod, assigner };
@@ -178,7 +161,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -215,7 +198,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(body.password, 10);
+    const hashedPassword = await hashPassword(body.password);
 
     // Create moderator with user account
     const moderator = await prisma.$transaction(async (tx) => {

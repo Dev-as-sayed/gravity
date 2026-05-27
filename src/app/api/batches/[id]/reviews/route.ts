@@ -7,10 +7,10 @@ import { sendResponse } from "@/lib/sendResponse";
 // GET /api/batches/[id]/reviews - Get batch reviews
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const reviews = await prisma.batchReview.findMany({
       where: { batchId: id },
@@ -61,7 +61,7 @@ export async function GET(
 // POST /api/batches/[id]/reviews - Add review to batch
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const auth = await authenticate(req, "STUDENT");
@@ -74,7 +74,7 @@ export async function POST(
       });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     // Check if student is enrolled

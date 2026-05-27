@@ -9,7 +9,7 @@ import { sendResponse } from "@/lib/sendResponse";
 export async function GET(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -138,7 +138,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Authenticate - only ADMIN and SUPER_ADMIN can access
-    const auth = await authenticate(req, "ADMIN", "SUPER_ADMIN");
+    const auth = await authenticate(req, "TEACHER");
 
     if (!auth.success) {
       return sendResponse({
@@ -217,6 +217,7 @@ export async function POST(req: NextRequest) {
       // Create notification preferences
       await tx.notificationPreference.create({
         data: {
+          preferences: {},
           userId: user.id,
         },
       });
