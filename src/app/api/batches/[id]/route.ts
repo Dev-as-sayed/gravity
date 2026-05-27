@@ -107,6 +107,7 @@ export async function GET(
           },
           orderBy: { createdAt: "desc" },
         },
+        sessions: true,
         _count: {
           select: {
             enrollments: true,
@@ -203,6 +204,24 @@ export async function PUT(
       return new Date(value);
     };
 
+    // Handle sessions: delete existing and recreate if provided
+    if (body.sessions) {
+      await prisma.batchSession.deleteMany({ where: { batchId: id } });
+      if (body.sessions.length > 0) {
+        await prisma.batchSession.createMany({
+          data: body.sessions.map((s: any) => ({
+            batchId: id,
+            name: s.name,
+            days: s.days,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            liveSessionLink: s.liveSessionLink,
+            room: s.room,
+          })),
+        });
+      }
+    }
+
     // Update batch with proper type handling
     const batch = await prisma.batch.update({
       where: { id },
@@ -242,10 +261,16 @@ export async function PUT(
       },
     });
 
+    // Fetch updated batch with sessions
+    const updatedBatch = await prisma.batch.findUnique({
+      where: { id },
+      include: { sessions: true },
+    });
+
     return sendResponse({
       success: true,
       message: "Batch updated successfully",
-      data: batch,
+      data: updatedBatch,
     });
   } catch (error) {
     console.error("Error updating batch:", error);

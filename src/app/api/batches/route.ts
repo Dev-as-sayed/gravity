@@ -112,6 +112,7 @@ export async function GET(req: NextRequest) {
               name: true,
             },
           },
+          sessions: true,
           _count: {
             select: {
               enrollments: true,
@@ -222,6 +223,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Handle sessions
+    const sessions = body.sessions || [];
+
     // Create batch
     const batch = await prisma.batch.create({
       data: {
@@ -277,10 +281,39 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Create sessions if provided
+    if (sessions.length > 0) {
+      await prisma.batchSession.createMany({
+        data: sessions.map((s: any) => ({
+          batchId: batch.id,
+          name: s.name,
+          days: s.days,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          liveSessionLink: s.liveSessionLink,
+          room: s.room,
+        })),
+      });
+    }
+
+    // Fetch batch with sessions for response
+    const batchWithSessions = await prisma.batch.findUnique({
+      where: { id: batch.id },
+      include: {
+        sessions: true,
+        teacher: {
+          select: { name: true },
+        },
+        course: {
+          select: { title: true },
+        },
+      },
+    });
+
     return sendResponse({
       success: true,
       message: "Batch created successfully",
-      data: batch,
+      data: batchWithSessions,
       status: 201,
     });
   } catch (error) {

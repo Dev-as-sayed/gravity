@@ -39,6 +39,7 @@ async function main() {
   await prisma.studentProgress.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.enrollment.deleteMany();
+  await prisma.batchSession.deleteMany();
   await prisma.batch.deleteMany();
   await prisma.course.deleteMany();
   await prisma.notification.deleteMany();
@@ -234,17 +235,18 @@ async function main() {
   }
 
   const batchData = [
-    { id: "bch_001", name: "JEE Advanced 2026 - Morning Batch", slug: "jee-advanced-2026-morning", courseId: "crs_001", price: 25000, max: 60, mode: "ONLINE" as const, start: new Date("2026-04-01"), schedule: { monday: "06:00-08:00", wednesday: "06:00-08:00", friday: "06:00-08:00" } },
-    { id: "bch_002", name: "JEE Advanced 2026 - Evening Batch", slug: "jee-advanced-2026-evening", courseId: "crs_001", price: 25000, max: 50, mode: "ONLINE" as const, start: new Date("2026-04-01"), schedule: { tuesday: "18:00-20:00", thursday: "18:00-20:00", saturday: "18:00-20:00" } },
-    { id: "bch_003", name: "NEET Physics - Crash Course Apr", slug: "neet-physics-crash-apr", courseId: "crs_002", price: 12000, max: 40, mode: "ONLINE" as const, start: new Date("2026-04-15"), schedule: { monday: "14:00-16:00", wednesday: "14:00-16:00", friday: "14:00-16:00" } },
-    { id: "bch_004", name: "Free Physics - Weekend Batch", slug: "free-physics-weekend", courseId: "crs_003", price: 0, max: 100, mode: "ONLINE" as const, start: new Date("2026-05-01"), schedule: { saturday: "10:00-12:00", sunday: "10:00-12:00" } },
-    { id: "bch_005", name: "Math for Physics - Intensive", slug: "math-physics-intensive", courseId: "crs_004", price: 15000, max: 35, mode: "HYBRID" as const, start: new Date("2026-05-01"), schedule: { monday: "16:00-18:00", tuesday: "16:00-18:00", thursday: "16:00-18:00" } },
-    { id: "bch_006", name: "JEE Advanced 2027 - Foundation Batch", slug: "jee-advanced-2027-foundation", courseId: "crs_001", price: 20000, max: 45, mode: "ONLINE" as const, start: new Date("2026-06-01"), schedule: { tuesday: "06:00-08:00", thursday: "06:00-08:00", saturday: "06:00-08:00" } },
-    { id: "bch_007", name: "Viva & Experimental Physics", slug: "experimental-physics", courseId: "crs_005", price: 8000, max: 25, mode: "OFFLINE" as const, start: new Date("2026-05-15"), schedule: { wednesday: "10:00-12:00", friday: "10:00-12:00" }, lang: "English" },
-    { id: "bch_008", name: "NEET Physics - Evening Crash", slug: "neet-physics-evening-crash", courseId: "crs_002", price: 12000, max: 35, mode: "ONLINE" as const, start: new Date("2026-05-01"), schedule: { tuesday: "18:00-20:00", thursday: "18:00-20:00", saturday: "18:00-20:00" } },
+    { id: "bch_001", name: "JEE Advanced 2026 - Morning Batch", slug: "jee-advanced-2026-morning", courseId: "crs_001", price: 25000, max: 60, mode: "ONLINE" as const, start: new Date("2026-04-01"), sessions: [{ name: "Morning", days: ["monday", "wednesday", "friday"], startTime: "06:00", endTime: "08:00" }] },
+    { id: "bch_002", name: "JEE Advanced 2026 - Evening Batch", slug: "jee-advanced-2026-evening", courseId: "crs_001", price: 25000, max: 50, mode: "ONLINE" as const, start: new Date("2026-04-01"), sessions: [{ name: "Evening", days: ["tuesday", "thursday", "saturday"], startTime: "18:00", endTime: "20:00" }] },
+    { id: "bch_003", name: "NEET Physics - Crash Course Apr", slug: "neet-physics-crash-apr", courseId: "crs_002", price: 12000, max: 40, mode: "ONLINE" as const, start: new Date("2026-04-15"), sessions: [{ name: "Afternoon", days: ["monday", "wednesday", "friday"], startTime: "14:00", endTime: "16:00" }] },
+    { id: "bch_004", name: "Free Physics - Weekend Batch", slug: "free-physics-weekend", courseId: "crs_003", price: 0, max: 100, mode: "ONLINE" as const, start: new Date("2026-05-01"), sessions: [{ name: "Morning", days: ["saturday", "sunday"], startTime: "10:00", endTime: "12:00" }] },
+    { id: "bch_005", name: "Math for Physics - Intensive", slug: "math-physics-intensive", courseId: "crs_004", price: 15000, max: 35, mode: "HYBRID" as const, start: new Date("2026-05-01"), sessions: [{ name: "Evening", days: ["monday", "tuesday", "thursday"], startTime: "16:00", endTime: "18:00" }] },
+    { id: "bch_006", name: "JEE Advanced 2027 - Foundation Batch", slug: "jee-advanced-2027-foundation", courseId: "crs_001", price: 20000, max: 45, mode: "ONLINE" as const, start: new Date("2026-06-01"), sessions: [{ name: "Morning", days: ["tuesday", "thursday", "saturday"], startTime: "06:00", endTime: "08:00" }] },
+    { id: "bch_007", name: "Viva & Experimental Physics", slug: "experimental-physics", courseId: "crs_005", price: 8000, max: 25, mode: "OFFLINE" as const, start: new Date("2026-05-15"), sessions: [{ name: "Morning", days: ["wednesday", "friday"], startTime: "10:00", endTime: "12:00" }], lang: "English" },
+    { id: "bch_008", name: "NEET Physics - Evening Crash", slug: "neet-physics-evening-crash", courseId: "crs_002", price: 12000, max: 35, mode: "ONLINE" as const, start: new Date("2026-05-01"), sessions: [{ name: "Evening", days: ["tuesday", "thursday", "saturday"], startTime: "18:00", endTime: "20:00" }] },
   ];
 
   for (const b of batchData) {
+    const { sessions: bSessions, ...batchFields } = b;
     await prisma.batch.upsert({
       where: { slug: b.slug },
       update: {},
@@ -255,10 +257,22 @@ async function main() {
         startDate: b.start, price: b.price,
         maxStudents: b.max, currentEnrollments: 0,
         enrollmentOpen: true, isPublished: true, isActive: true,
-        schedule: b.schedule,
         totalClasses: 120, completedClasses: Math.floor(Math.random() * 30),
       },
     });
+
+    // Create sessions for this batch
+    if (bSessions) {
+      const existingSessions = await prisma.batchSession.findMany({ where: { batchId: b.id } });
+      if (existingSessions.length === 0) {
+        await prisma.batchSession.createMany({
+          data: bSessions.map((s) => ({
+            batchId: b.id, name: s.name,
+            days: s.days, startTime: s.startTime, endTime: s.endTime,
+          })),
+        });
+      }
+    }
   }
 
   const batchIds = batchData.map(b => b.id);

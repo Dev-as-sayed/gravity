@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
     const board = searchParams.get("board");
     const educationLevel = searchParams.get("educationLevel");
     const hasGuardian = searchParams.get("hasGuardian");
+    const guardianId = searchParams.get("guardianId");
 
     // Calculate pagination
     const skip = (page - 1) * limit;
@@ -68,8 +69,10 @@ export async function GET(req: NextRequest) {
       where.educationLevel = educationLevel;
     }
 
-    // Filter by guardian status
-    if (hasGuardian === "true") {
+    // Filter by guardian
+    if (guardianId) {
+      where.guardianId = guardianId;
+    } else if (hasGuardian === "true") {
       where.guardianId = { not: null };
     } else if (hasGuardian === "false") {
       where.guardianId = null;

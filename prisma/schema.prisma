@@ -588,6 +588,7 @@ model Batch {
   language    String?   @default("English")
 
   moderators Moderator[] @relation("ModeratorBatches")
+  sessions   BatchSession[]
 
   // Capacity
   maxStudents        Int?
@@ -667,6 +668,27 @@ model Batch {
   @@index([courseId])
   @@index([isActive])
   @@index([startDate])
+}
+
+// Batch Sessions — each batch can have multiple time slots
+model BatchSession {
+  id      String @id @default(cuid())
+  batchId String
+  batch   Batch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  name      String   // Morning, Evening, Night
+  days      String[] // ["monday","wednesday","friday"]
+  startTime String   // "08:00"
+  endTime   String   // "10:00"
+
+  liveSessionLink String?
+  room            String?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([batchId])
 }
 
 // Batch Materials

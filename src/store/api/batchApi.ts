@@ -120,6 +120,19 @@ export interface Batch {
     materials: number;
   };
   studentEnrollmentStatus?: string | null;
+  sessions?: BatchSession[];
+}
+
+export interface BatchSession {
+  id: string;
+  batchId: string;
+  name: string;
+  days: string[];
+  startTime: string;
+  endTime: string;
+  liveSessionLink?: string | null;
+  room?: string | null;
+  isActive: boolean;
 }
 
 export interface BatchMaterial {
@@ -314,6 +327,7 @@ export interface CreateBatchData {
   syllabus?: any;
   topics?: string[];
   prerequisites?: string[];
+  sessions?: Omit<BatchSession, "id" | "batchId" | "isActive">[];
 }
 
 export interface UpdateBatchData extends Partial<CreateBatchData> {}
