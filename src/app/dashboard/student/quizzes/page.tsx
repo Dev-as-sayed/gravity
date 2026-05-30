@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useUser } from "@/hooks/useUser";
 import { useGetQuizzesQuery } from "@/store/api/quizApi";
 
 const Page = () => {
-  const { user, isLoading, isAuthenticated } = useUser();
+  const { isLoading, isAuthenticated } = useUser();
 
   const { data: quizzesData, isLoading: qLoading } = useGetQuizzesQuery({});
 
@@ -26,24 +27,44 @@ const Page = () => {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {quizzes.map((quiz: any) => (
-            <div key={quiz.id} className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50">
-              <div className="flex justify-between items-start">
-                <h3 className="text-white font-medium">{quiz.title}</h3>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  quiz.status === "PUBLISHED" ? "bg-green-500/20 text-green-400" :
-                  quiz.status === "ACTIVE" ? "bg-blue-500/20 text-blue-400" :
-                  "bg-gray-500/20 text-gray-400"
-                }`}>{quiz.status}</span>
+            <div key={quiz.id} className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50 flex flex-col">
+              <div className="flex-1">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-white font-medium">{quiz.title}</h3>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    quiz.status === "PUBLISHED" ? "bg-green-500/20 text-green-400" :
+                    quiz.status === "ACTIVE" ? "bg-blue-500/20 text-blue-400" :
+                    "bg-gray-500/20 text-gray-400"
+                  }`}>{quiz.status}</span>
+                </div>
+                {quiz.description && <p className="text-gray-400 text-sm mt-1">{quiz.description}</p>}
+                <div className="flex flex-wrap gap-3 mt-3 text-xs text-gray-500">
+                  {quiz.subject && <span>{quiz.subject}</span>}
+                  {quiz.totalMarks && <span>{quiz.totalMarks} marks</span>}
+                  {quiz.timeLimit && <span>{quiz.timeLimit} min</span>}
+                  {quiz.difficulty && <span className="capitalize">{quiz.difficulty?.toLowerCase()}</span>}
+                </div>
+                <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                  {quiz._count?.questions !== undefined && (
+                    <span>{quiz._count.questions} questions</span>
+                  )}
+                  {quiz._count?.attempts !== undefined && quiz._count.attempts > 0 && (
+                    <span>{quiz._count.attempts} attempt(s)</span>
+                  )}
+                </div>
               </div>
-              {quiz.description && <p className="text-gray-400 text-sm mt-1">{quiz.description}</p>}
-              <div className="flex flex-wrap gap-3 mt-3 text-xs text-gray-500">
-                {quiz.subject && <span>{quiz.subject}</span>}
-                {quiz.totalMarks && <span>{quiz.totalMarks} marks</span>}
-                {quiz.timeLimit && <span>{quiz.timeLimit} min</span>}
-                {quiz.difficulty && <span>{quiz.difficulty}</span>}
-              </div>
-              {quiz._count?.questions !== undefined && (
-                <p className="text-xs text-gray-500 mt-2">{quiz._count.questions} questions</p>
+              {quiz.status === "PUBLISHED" && (
+                <Link
+                  href={`/dashboard/student/quizzes/${quiz.id}`}
+                  className="mt-4 w-full text-center py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                >
+                  Start Quiz
+                </Link>
+              )}
+              {quiz.status !== "PUBLISHED" && (
+                <div className="mt-4 w-full text-center py-2 bg-gray-700/50 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+                  Not Available
+                </div>
               )}
             </div>
           ))}

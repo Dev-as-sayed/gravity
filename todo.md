@@ -1,303 +1,395 @@
-# Gravity — Single-Teacher Migration Todo
+# Gravity Platform — Full Completion Todo
 
-## Goal
-Convert the multi-teacher LMS platform into a **single-teacher platform** with 4 roles:
-- **Teacher** — the sole owner/admin of the platform (was SUPER_ADMIN/ADMIN)
-- **Moderator** — teacher's helping hand for management (was MODERATOR, simplified)
-- **Student** — learners
-- **Guardian** — parents/guardians of students
-
----
-
-## Phase 1 — Database Schema (`prisma/schema.prisma`)
-
-### 1.1 Roles enum
-- Remove `SUPER_ADMIN`, `ADMIN` from `UserRole` enum
-- Keep `TEACHER`, `MODERATOR`, `STUDENT`, `GUARDIAN`
-
-### 1.2 Models to remove
-| Model | Lines | Reason |
-|---|---|---|
-| `Admin` | 427-440 | Replaced by Teacher as owner |
-| `TeacherReview` | 818-833 | No multi-teacher ratings needed |
-| `SubscriptionPlan` | ~2470-2490 | No subscription tiers needed |
-| `TeacherSubscription` | ~2492-2522 | No subscription tracking needed |
-
-### 1.3 Models to simplify
-- **`User`**: Remove `admin` relation (line 289)
-- **`Teacher`**: Remove `employeeId`, `joiningDate`, `specializations`, `researchPapers`, `awards`, `gstNumber`, `panNumber`, `bankDetails`, `upiId`, `settings`, `officeHours`, `totalStudents`, `averageRating`, `totalCourses`, `totalBatches`, `totalReviews`, `teacherSubscriptions` — keep only identity/profile fields (name, bio, qualification, expertise, profileImage, coverImage, designation, institute, experience, social links, content relations)
-- **`Batch`**: Remove `moderators` relation (line 611)
-- **`Course`**: Keep as-is (teacherId stays)
-- **`Post`**: Keep as-is
-
-### 1.4 Models to keep as-is
-- `Teacher`, `Student`, `Guardian`, `Moderator` (simplified)
-- All content models: `Batch`, `Course`, `Enrollment`, `Payment`, `Installment`, `Note`, `Quiz`, `Question`, `QuizAttempt`, `QuizResult`, `Exam`, `ExamResult`, `Attendance`, `LiveSession`, `LiveSessionAttendance`, `Assignment`, `AssignmentSubmission`, `Doubt`, `DoubtAnswer`, `BatchReview`, `Certificate`, `BatchMaterial`, `Post`, `MediaAttachment`, `PostReaction`, `Comment`, `CommentReaction`, `PostBookmark`, `Poll`, `PollVote`, `PostView`, `PostShare`, `PostCollection`, `Announcement`, `Blog`, `StudentProgress`, `Notification`, `NotificationPreference`, `DeviceToken`, `UserActivity`, `Session`, `OTP`, `AuditLog`, `SupportTicket`, `TicketMessage`, `Referral`
+## Project Stats
+| Metric | Count |
+|--------|-------|
+| Page files | 98 |
+| API routes | 123 |
+| Store API slices | 27 |
+| Components | 22 |
+| Prisma models | 57 |
+| Dashboard pages | 40+ |
+| Student pages | 30 |
+| Guardian pages | 20 |
+| Seed users | 628 |
 
 ---
 
-## Phase 2 — Remove Admin API Routes
+## Phase 1 — Empty Public Pages
 
-### 2.1 Delete these files (teacher management — no CRUD for single teacher)
-- `src/app/api/teachers/route.ts`
-- `src/app/api/teachers/stats/route.ts`
-- `src/app/api/teachers/bulk/route.ts`
-- `src/app/api/teachers/[id]/route.ts`
+### 1.1 `/blog` page (5 lines — EMPTY)
+- [ ] Build blog listing page with pagination
+- [ ] Create `/blog/[slug]` detail page
+- [ ] Wire up `useGetBlogsQuery` from `blogApi`
+- [ ] Add category/tag filtering
 
-### 2.2 Delete these files (guardian management — simplify)
-- `src/app/api/guardians/route.ts`
-- `src/app/api/guardians/stats/route.ts`
-- `src/app/api/guardians/bulk/route.ts`
-- `src/app/api/guardians/[id]/route.ts`
-- `src/app/api/guardians/[id]/preferences/route.ts`
-- `src/app/api/guardians/[id]/students/route.ts`
+### 1.2 `/notes` page (5 lines — EMPTY)
+- [ ] Build public notes listing page
+- [ ] Wire up note browsing with subject/class filters
+- [ ] Link to `/notes/[id]` detail or download page
 
-### 2.3 Simplify remaining API routes
-Search for `SUPER_ADMIN` and `ADMIN` references in ALL route files and replace with `TEACHER` or remove.
-
-**Files to update** (non-exhaustive — search for all occurrences):
-- `src/app/api/users/route.ts` — remove SUPER_ADMIN-only teacher/student detail includes
-- `src/app/api/users/[id]/route.ts` — remove admin-only profile expansion
-- `src/app/api/batches/route.ts` — remove admin role checks
-- `src/app/api/batches/stats/route.ts` — simplify role filtering
-- `src/app/api/courses/route.ts` — simplify role filtering
-- `src/app/api/enrollments/route.ts` — simplify
-- `src/app/api/enrollments/stats/route.ts` — simplify
-- `src/app/api/payments/route.ts` — simplify
-- `src/app/api/payments/stats/route.ts` — simplify
-- `src/app/api/quizzes/route.ts` — simplify
-- `src/app/api/quizzes/stats/route.ts` — simplify
-- `src/app/api/exams/route.ts` — simplify
-- `src/app/api/exams/stats/route.ts` — simplify
-- `src/app/api/notes/route.ts` — simplify
-- `src/app/api/notes/stats/route.ts` — simplify
-- `src/app/api/media/route.ts` — simplify
-- `src/app/api/media/stats/route.ts` — simplify
-- `src/app/api/doubts/route.ts` — simplify
-- `src/app/api/doubts/stats/route.ts` — simplify
-- `src/app/api/moderators/route.ts` — simplify (teacher assigns, not admin)
-- `src/app/api/moderators/bulk/route.ts` — simplify
-- `src/app/api/moderators/[id]/route.ts` — simplify
-- `src/app/api/moderators/[id]/activity/route.ts` — simplify
-- `src/app/api/moderators/[id]/batches/route.ts` — simplify
-- `src/app/api/moderators/stats/route.ts` — simplify
-- `src/app/api/enrollments/bulk/route.ts` — simplify
-- `src/app/api/students/route.ts` — simplify
-- `src/app/api/students/bulk/route.ts` — simplify
-- `src/app/api/students/stats/route.ts` — simplify
+### 1.3 Home page polish
+- [ ] Verify all 7 section components render correctly (Hero, Benefits, Steps, Results, Resources, FAQ, CTA)
+- [ ] Add loading states for dynamic data sections
+- [ ] Add error boundaries
 
 ---
 
-## Phase 3 — Auth & Role Simplification
+## Phase 2 — Dashboard Enhancements
 
-### 3.1 `src/lib/apiAuthenticator.ts`
-- Change `UserRole` type to: `"TEACHER" | "MODERATOR" | "STUDENT" | "GUARDIAN"`
-- Remove `adminId`, `moderatorId` from `AuthenticatedUser` (keep mod if needed)
-- Remove `hasRoleLevel()` — no hierarchy needed (or flat: TEACHER > MODERATOR > STUDENT > GUARDIAN)
-- Remove SUPER_ADMIN bypass in `hasRole()` and `authenticate()`
-- Simplify `isResourceOwner()` — Teacher owns everything, remove ADMIN/SUPER_ADMIN checks
-- Remove `admin` from Prisma includes in `authenticateWithOptions()`
+### 2.1 Root `/dashboard` page
+- [ ] Currently hardcoded as "Moderator Dashboard" (50 lines)
+- [ ] Redirect by role: TEACHER → `/dashboard/teacher`, MODERATOR → `/dashboard/dashboard`, STUDENT → `/dashboard/student`
+- [ ] Or build a role-aware home page
 
-### 3.2 `src/middleware.ts`
-- Remove `/admin` path check
-- Update role checks for new role names
-- Simplify matcher to: `/dashboard/:path*`, `/profile/:path*`
+### 2.2 Missing Create/Edit Pages
+- [ ] **Batch create** page (`/dashboard/batches/create`)
+- [ ] **Batch edit** page (`/dashboard/batches/[id]/edit`)
+- [ ] **Course create** page (`/dashboard/courses/create`)
+- [ ] **Course edit** page (`/dashboard/courses/[id]/edit`)
+- [ ] **Live session create** (detail already exists under `/dashboard/live-sessions` but no create form)
+- [ ] **Assignment create** page
 
-### 3.3 `src/lib/auth.ts`
-- Remove `adminId` from JWT/session callbacks
-- Simplify `authorize` callback — only TEACHER registration is blocked (only seed teacher exists)
+### 2.3 Thin/Placeholder Pages (50–85 lines)
+These pages have basic hooks but minimal UI:
 
-### 3.4 `src/type/next-auth.d.ts`
-- Remove `adminId` from session types
-- Keep `teacherId`, `studentId`, `guardianId`, `moderatorId`
+| Page | Lines | Priority |
+|------|-------|----------|
+| `/dashboard/comments` | 85 | Low |
+| `/dashboard/student/notes` | 48 | Low |
+| `/dashboard/student/practice` | 48 | Low |
+| `/dashboard/student/formulas` | 51 | Low |
+| `/dashboard/student/forum` | 53 | Medium |
+| `/dashboard/student/blogs` | 55 | Low |
+| `/dashboard/student/media` | 56 | Low |
+| `/dashboard/student/quizzes` | 56 | Low |
+| `/dashboard/student/certificates` | 61 | Medium |
+| `/dashboard/student/papers` | 61 | Low |
+| `/dashboard/student/recordings` | 61 | Low |
+| `/dashboard/student/guardian` | 63 | Low |
+| `/dashboard/student/my-doubts` | 64 | Medium |
+| `/dashboard/student/test-series` | 67 | Low |
+| `/dashboard/student` (home) | 71 | Medium |
+| `/dashboard/student/exams` | 74 | Medium |
+| `/dashboard/student/settings` | 73 | Medium |
+| `/dashboard/teacher` | 66 | High |
+| `/dashboard/analytics/performance` | 78 | Medium |
+| `/dashboard/student/attendance` | 78 | Medium |
+| `/dashboard/student/live-classes` | 83 | Medium |
+| `/dashboard/student/achievements` | 85 | Low |
 
----
-
-## Phase 4 — Dashboard Pages
-
-### 4.1 Delete entire `/dashboard/admin/` directory
-All pages and subdirectories under `src/app/dashboard/admin/` — they are no longer needed.
-
-### 4.2 Teacher Dashboard
-- The teacher (as owner) now uses what was admin functionality
-- Create or repurpose pages under `/dashboard/teacher/` or `/dashboard/` for teacher
-- Teacher needs access to: Batches, Students, Courses, Enrollments, Payments, Notes, Quizzes, Exams, Doubts, Media, Blogs, Attendance, Live Sessions, Assignments, Analytics, Profile, Settings
-
-### 4.3 Student Dashboard
-- Keep `src/app/dashboard/student/page.tsx`
-- Keep `src/app/dashboard/student/my-batches/page.tsx`
-- Future: add remaining student pages from nav items
-
-### 4.4 Moderator Dashboard
-- Keep moderator-specific pages or create them as needed
-
----
-
-## Phase 5 — Dashboard Navigation & Layout
-
-### 5.1 `src/utils/dashboardNavItem.ts`
-- Remove `adminNavItems` array
-- Update `roleNavMap` to 4 entries: `TEACHER`, `MODERATOR`, `STUDENT`, `GUARDIAN`
-- Simplify `teacherNavItems` — teacher sees the full management nav (was admin items + teacher items)
-- Keep `moderatorNavItems` (simplify — no "Approve Notes" or moderation pipeline if not needed)
-- Simplify `studentNavItems`
-- Simplify `guardianNavItems`
-
-### 5.2 `src/components/shared/DashboardNav.tsx`
-- Update to handle 4 roles (TEACHER, MODERATOR, STUDENT, GUARDIAN)
-
-### 5.3 `src/components/shared/DashboardTopBar.tsx`
-- Simplify user menu items
-
-### 5.4 `src/app/dashboard/layout.tsx`
-- Remove admin role-specific handling
+### 2.4 Missing Teacher Analytics
+- `/dashboard/analytics/performance` (78 lines) — needs charts, trend data
+- `/dashboard/analytics/progress` (100 lines) — needs student progress tracking UI
 
 ---
 
-## Phase 6 — Redux Store Cleanup
+## Phase 3 — Student Academic Workflow
 
-### 6.1 Remove API files
-- `src/store/api/teacherApi.ts` — no teacher management API
-- `src/store/api/userManagementApi.ts` — no user management needed
-- `src/store/api/guardianApi.ts` — simplify guardian functionality
+### 3.1 Quiz Taking Interface
+- [ ] API routes exist at `/api/quizzes/[id]/attempt` and `/api/quizzes/[id]/attempt/[attemptId]/submit`
+- [ ] **Missing front-end pages:**
+- [ ] Build quiz taking page (`/dashboard/student/quizzes/[id]/attempt`)
+- [ ] Timer/clock functionality
+- [ ] Question navigation (prev/next, question palette)
+- [ ] Auto-submit on time expiry
+- [ ] Results display after submission
 
-### 6.2 Simplify remaining APIs
-- `src/store/api/baseApi.ts` — remove admin/superadmin tag types
-- `src/store/api/moderatorApi.ts` — simplify endpoints
+### 3.2 Exam Taking Interface
+- [ ] Build exam taking page (`/dashboard/student/exams/[id]/attempt`)
+- [ ] Support for different question types (MCQ, subjective, numerical)
+- [ ] File upload for subjective answers
+- [ ] Results/review page
 
-### 6.3 Update store
-- `src/store/index.ts` — remove deleted API slices from configureStore
-- `src/store/slices/authSlice.ts` — simplify to 4 roles
+### 3.3 Assignment Submission
+- [ ] Assignment detail view with submission form
+- [ ] File upload for assignment submissions
+- [ ] View grades/feedback after teacher review
 
----
-
-## Phase 7 — Simplify Moderator System
-
-### Schema
-- Moderator no longer has `assignedBy` pointing to arbitrary Admin
-- Moderator is assigned by the single Teacher
-- Permissions simplified — moderator helps with batch management, attendance, doubts, etc.
-
-### API
-- All moderator routes remain but are simplified:
-  - No SUPER_ADMIN/ADMIN role checks — just TEACHER
-  - Moderator CRUD is done by Teacher only
-  - Moderator activity tracking simplified
+### 3.4 Live Session Viewer
+- [ ] Embed video player (YouTube/Vimeo/Jitsi)
+- [ ] Chat side panel
+- [ ] Session recording playback
 
 ---
 
-## Phase 8 — Seed Data & Migration
+## Phase 4 — Payment & Financial
 
-### `prisma/seed.sql`
-- Create 1 Teacher user (the platform owner)
-- Remove ADMIN/SUPER_ADMIN seed users
-- Remove SubscriptionPlan seed data
-- Simplify Moderator seed (if any)
-- Keep Student and Guardian seed data
+### 4.1 Payment Gateway Integration
+- [ ] Integrate Razorpay/Stripe
+- [ ] Create payment intent API endpoint
+- [ ] Enrollment payment flow (course → checkout → pay → enroll)
+- [ ] Payment success/failure webhooks
+- [ ] Installment payment support
 
-### `prisma/test.sql`
-- Same simplifications
+### 4.2 Fee Management
+- [ ] Fee structure creation (Teacher only)
+- [ ] Due date tracking & reminders
+- [ ] Late fee calculation
+- [ ] Discount/coupon application
+- [ ] Receipt generation (PDF)
 
-### Migration
-- Create new Prisma migration after schema changes
-- `npx prisma migrate dev --name single-teacher-migration`
-
----
-
-## Phase 9 — Frontend Pages & Components
-
-### `src/app/auth/register/page.tsx`
-- Remove TEACHER role from registration options
-- Only allow STUDENT and GUARDIAN registration
-- Remove teacher-specific registration fields
-
-### `src/components/ui/CourseCard.tsx`
-- Simplify teacher display (point to the single teacher)
-
-### `src/components/shared/Navbar.tsx`
-- Remove admin/teacher role-based menu items for public nav
-- Keep simple nav for students/guardians
-
-### `src/hooks/useUser.ts`
-- Fix the lowercase role comparison bug (`role === "admin"` → `role === "TEACHER"`)
-- Simplify for the new 4-role system
-
-### `src/hooks/useAuth.ts`
-- Simplify for new role system
-
-### `src/components/section/Home/*`
-- Update marketing copy if it references multiple teachers/institutions
+### 4.3 Student Payment Portal
+- [ ] `/dashboard/student/fees` — view fee structure & dues
+- [ ] `/dashboard/student/payments` — payment history
+- [ ] `/dashboard/student/invoices` — invoice download
+- [ ] Online payment from student portal
 
 ---
 
-## Phase 10 — Final Cleanup
+## Phase 5 — Communication & Notifications
 
-- [ ] Regenerate Prisma client: `npx prisma generate`
-- [ ] Remove orphaned imports across all files
-- [ ] Run `npm run build` to verify compilation
-- [ ] Remove `src/generated/prisma/` git reference (already in .gitignore)
-- [ ] Update README.md to reflect single-teacher platform
-- [ ] Remove any remaining references to `SUPER_ADMIN`, `ADMIN` via grep
-- [ ] Test authentication flow (login, register, session)
-- [ ] Test teacher dashboard access
-- [ ] Test student dashboard access
-- [ ] Test moderator access
+### 5.1 Real-Time Messaging
+- [ ] WebSocket/Socket.io integration for live chat
+- [ ] Read receipts
+- [ ] Typing indicators
+- [ ] File/image sharing in messages
+- [ ] Push notification for new messages
+
+### 5.2 Notification Delivery
+- [ ] Email notifications (using Resend/SendGrid)
+- [ ] Push notifications (using Firebase/OneSignal)
+- [ ] In-app notification center (UI exists at `/dashboard/notifications`)
+- [ ] Notification preferences (per user, per type)
+
+### 5.3 Announcements
+- [ ] Email blast for urgent announcements
+- [ ] Read tracking per batch
+- [ ] Scheduled announcements
 
 ---
 
-## Role Mapping (After Migration)
+## Phase 6 — Content Management
 
-| Old Role | New Role | Access Level |
-|---|---|---|
-| SUPER_ADMIN | — | Absorbed into TEACHER |
-| ADMIN | — | Absorbed into TEACHER |
-| TEACHER | TEACHER | Full platform ownership |
-| MODERATOR | MODERATOR | Teacher-assigned helper |
-| STUDENT | STUDENT | Learner access |
-| GUARDIAN | GUARDIAN | Parent/guardian access |
+### 6.1 File Upload
+- [ ] Cloud storage integration (S3/Cloudinary)
+- [ ] Upload UI for notes, assignments, profile images
+- [ ] File type validation & size limits
+- [ ] Image optimization
 
-## Files to Delete (Summary)
+### 6.2 Notes System
+- [ ] Note preview (PDF viewer)
+- [ ] Bookmarking/favorites
+- [ ] Rating & review
+- [ ] Category/subject hierarchy
 
-```
-src/app/api/teachers/route.ts
-src/app/api/teachers/stats/route.ts
-src/app/api/teachers/bulk/route.ts
-src/app/api/teachers/[id]/route.ts
-src/app/api/guardians/route.ts
-src/app/api/guardians/stats/route.ts
-src/app/api/guardians/bulk/route.ts
-src/app/api/guardians/[id]/route.ts
-src/app/api/guardians/[id]/preferences/route.ts
-src/app/api/guardians/[id]/students/route.ts
-src/app/dashboard/admin/                  (entire directory)
-src/store/api/teacherApi.ts
-src/store/api/userManagementApi.ts
-src/store/api/guardianApi.ts
-```
+### 6.3 Media Library
+- [ ] Image gallery with lightbox
+- [ ] Video upload & streaming
+- [ ] Media categorization
 
-## Files to Modify (Summary)
+---
 
-```
-prisma/schema.prisma
-src/lib/apiAuthenticator.ts
-src/middleware.ts
-src/lib/auth.ts
-src/type/next-auth.d.ts
-src/utils/dashboardNavItem.ts
-src/components/shared/DashboardNav.tsx
-src/components/shared/DashboardTopBar.tsx
-src/app/dashboard/layout.tsx
-src/store/api/baseApi.ts
-src/store/api/moderatorApi.ts
-src/store/index.ts
-src/store/slices/authSlice.ts
-prisma/seed.sql
-prisma/test.sql
-src/app/auth/register/page.tsx
-src/components/ui/CourseCard.tsx
-src/components/shared/Navbar.tsx
-src/hooks/useUser.ts
-src/hooks/useAuth.ts
-```
+## Phase 7 — Reports & Analytics
 
-Plus ~30 API route files that need SUPER_ADMIN/ADMIN references replaced.
+### 7.1 Teacher Reports
+- [ ] Performance dashboard with charts (recharts/chart.js)
+- [ ] Batch comparison
+- [ ] Student-wise performance trends
+- [ ] Attendance analytics
+- [ ] Payment/fee collection reports
+- [ ] Export to CSV/PDF
+
+### 7.2 Student Analytics
+- [ ] Progress over time (line charts)
+- [ ] Subject-wise strength/weakness
+- [ ] Rank tracking
+- [ ] Attendance calendar
+- [ ] Quiz/exam score distribution
+
+### 7.3 Guardian Reports
+- [ ] Child progress reports
+- [ ] Attendance summary
+- [ ] Fee payment status
+- [ ] Comparative performance
+
+---
+
+## Phase 8 — Certificate & Achievement System
+
+### 8.1 Certificate Generation
+- [ ] Certificate template design
+- [ ] Auto-generate PDF on course completion
+- [ ] Certificate verification page (public)
+- [ ] Download/share certificate
+
+### 8.2 Achievement Badges
+- [ ] Badge definitions (streak, top performer, etc.)
+- [ ] Auto-award on criteria match
+- [ ] Display on student profile
+
+---
+
+## Phase 9 — Moderator System
+
+### 9.1 Permission System
+- [ ] Implement granular JSON permission checks in API routes
+- [ ] Moderator management UI for Teacher (`/dashboard/moderators`)
+- [ ] Batch assignment UI
+
+### 9.2 Moderator Workflows
+- [ ] Pending posts approval
+- [ ] Note approval pipeline
+- [ ] Comment moderation
+- [ ] Doubt assignment & resolution tracking
+
+---
+
+## Phase 10 — Infrastructure & Quality
+
+### 10.1 Error Handling
+- [ ] Global error boundary (`/error.tsx` — does not exist at root level)
+- [ ] Toast/snackbar notification system for API errors
+- [ ] Form validation (client + server)
+- [ ] Rate limiting feedback in UI
+
+### 10.2 Loading States
+- [ ] Skeleton loaders for all data pages
+- [ ] Progressive loading for large lists
+- [ ] Optimistic updates for mutations
+
+### 10.3 Empty States
+- [ ] Empty state components for all list pages
+- [ ] CTA prompts when no data (e.g., "Create your first batch")
+
+### 10.4 Responsive Design
+- [ ] Audit all pages for mobile responsiveness
+- [ ] Touch-friendly interactions for tablets
+- [ ] Print stylesheets for reports/invoices
+
+### 10.5 Performance
+- [ ] Image optimization (next/image for all)
+- [ ] API response caching
+- [ ] Infinite scroll or "load more" for lists
+- [ ] Bundle analysis & code splitting
+
+### 10.6 SEO
+- [ ] Meta tags for all public pages
+- [ ] Open Graph tags
+- [ ] Sitemap generation
+- [ ] Structured data (JSON-LD)
+
+### 10.7 Security
+- [ ] Rate limiting on auth routes
+- [ ] Input sanitization
+- [ ] CSRF protection
+- [ ] SQL injection prevention (Prisma handles this)
+- [ ] XSS prevention
+- [ ] Audit logging for sensitive operations
+
+### 10.8 Testing
+- [ ] Unit tests for API routes
+- [ ] Component tests for UI
+- [ ] Integration tests for auth flow
+- [ ] E2E tests for critical paths (login, enroll, pay)
+
+---
+
+## Phase 11 — Deployment & DevOps
+
+### 11.1 Environment Configuration
+- [ ] `.env.example` with all required vars
+- [ ] Production env setup
+- [ ] Secrets management
+
+### 11.2 Database
+- [ ] Migration strategy for production
+- [ ] Backup automation
+- [ ] Connection pooling
+
+### 11.3 CI/CD
+- [ ] GitHub Actions for lint + typecheck + test
+- [ ] Auto-deploy on merge
+- [ ] Preview deployments for PRs
+
+### 11.4 Monitoring
+- [ ] Error tracking (Sentry)
+- [ ] Performance monitoring
+- [ ] API usage analytics
+- [ ] Uptime monitoring
+
+### 11.5 Docker
+- [ ] Dockerfile for production build
+- [ ] docker-compose for local dev (app + postgres)
+- [ ] Health check endpoints
+
+---
+
+## Phase 12 — Additional Features
+
+### 12.1 Forgot/Reset Password
+- [ ] `/auth/forgot-password` page
+- [ ] `/auth/reset-password/[token]` page
+- [ ] Email sending for reset link
+- [ ] Token expiry & validation
+
+### 12.2 Email Verification
+- [ ] Verification email on registration
+- [ ] `/auth/verify-email/[token]` page
+- [ ] Resend verification option
+
+### 12.3 Public API
+- [ ] API documentation (Swagger/OpenAPI)
+- [ ] Rate limiting per API key
+- [ ] Webhook for external integrations
+
+### 12.4 Leaderboard & Gamification
+- [ ] Batch-wise leaderboard
+- [ ] Streak tracking
+- [ ] XP/points system
+- [ ] Weekly/monthly challenges
+
+### 12.5 Offline Support
+- [ ] PWA manifest
+- [ ] Service worker for caching
+- [ ] Offline note access
+- [ ] Background sync for submissions
+
+### 12.6 Multi-language
+- [ ] i18n setup
+- [ ] Hindi/regional language support
+- [ ] RTL layout support
+
+---
+
+## Quick Win Priority Matrix
+
+| Priority | Task | Effort | Impact |
+|----------|------|--------|--------|
+| 🔴 P0 | `/blog` and `/notes` public pages | 1 day | High (dead pages) |
+| 🔴 P0 | Quiz/exam taking interface | 3 days | High (core learning flow) |
+| 🔴 P0 | Payment gateway integration | 3 days | High (revenue) |
+| 🟡 P1 | Dashboard home by role | 0.5 day | High (UX) |
+| 🟡 P1 | Forgot/reset password | 1 day | High (auth) |
+| 🟡 P1 | Error boundaries + loading states | 2 days | Medium (UX) |
+| 🟡 P1 | Thin student pages (50-85 lines) | 3 days | Medium |
+| 🟢 P2 | Certificate generation | 2 days | Medium |
+| 🟢 P2 | Real-time messaging | 3 days | Medium |
+| 🟢 P2 | Reports with charts | 3 days | Medium |
+| 🔵 P3 | File upload to cloud | 2 days | Medium |
+| 🔵 P3 | Email notifications | 2 days | Low |
+| ⚪ P4 | Testing, CI/CD, monitoring | 5 days | Low (ops) |
+| ⚪ P4 | PWA, i18n, leaderboard | 5 days | Low (nice-to-have) |
+
+---
+
+## Current State Summary
+
+| Area | Status | Coverage |
+|------|--------|----------|
+| Public pages | 80% complete | Home, About, Contact, Media, Course ✓ | Blog, Notes ✗ |
+| Auth system | 90% complete | Login, Register, Session ✓ | Forgot/Reset password ✗ |
+| Dashboard (teacher) | 85% complete | 30+ pages with API + hooks ✓ | Missing create/edit pages |
+| Dashboard (student) | 75% complete | 30 sub-pages exist ✓ | Thin UI on many pages |
+| Guardian portal | 80% complete | 20 pages ✓ | Limited features |
+| API routes | 95% complete | 123 routes ✓ | Payment gateway missing |
+| Store API | 90% complete | 27 slices ✓ | Some thin endpoints |
+| Prisma schema | 100% complete | 57 models ✓ | Fully migrated |
+| Quiz/Exam attempt UI | 0% | API exists, no front-end pages |
+| Forgot/Reset password | 0% | No pages or routes exist |
+| Payment gateway integration | 0% | API stubs exist, no real gateway |
+| File upload to cloud | 0% | Upload UI exists, no cloud storage |
+| Certificate generation | 0% | Model exists, no feature |
+| Test files | 0% | No tests anywhere in project |
+| Seed data | 100% complete | 628 users ✓ |
+| TypeScript | 100% clean | `tsc --noEmit` passes ✓ | Zero errors |

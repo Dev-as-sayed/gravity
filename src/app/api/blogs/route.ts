@@ -13,14 +13,6 @@ export async function GET(req: NextRequest) {
       "GUARDIAN",
     );
 
-    if (!auth.success) {
-      return sendResponse({
-        success: false,
-        message: auth.error || "Unauthorized",
-        status: auth.status || 401,
-      });
-    }
-
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
@@ -69,13 +61,15 @@ export async function GET(req: NextRequest) {
       if (toDate) where.publishedAt.lte = new Date(toDate);
     }
 
-    // If user is teacher, only show their blogs
-    if (auth.user?.role === "TEACHER") {
-      where.teacherId = auth.user.teacherId;
-    }
-
-    // If user is student or guardian, only show published blogs
-    if (auth.user?.role === "STUDENT" || auth.user?.role === "GUARDIAN") {
+    // If authenticated, apply role-based filters
+    if (auth.success) {
+      if (auth.user?.role === "TEACHER") {
+        where.teacherId = auth.user.teacherId;
+      } else if (auth.user?.role === "STUDENT" || auth.user?.role === "GUARDIAN") {
+        where.isPublished = true;
+      }
+    } else {
+      // Public access — only published blogs
       where.isPublished = true;
     }
 

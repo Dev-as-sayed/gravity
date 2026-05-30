@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import {
   useGetBatchesQuery,
@@ -111,7 +112,13 @@ const BatchesPage = () => {
                     {batch.isActive ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td className="py-3">
+                <td className="py-3 flex gap-3">
+                  <Link
+                    href={`/dashboard/batches/${batch.id}`}
+                    className="text-blue-400 hover:text-blue-300 text-sm"
+                  >
+                    View
+                  </Link>
                   <button
                     onClick={() => deleteBatch(batch.id)}
                     className="text-red-400 hover:text-red-300 text-sm"

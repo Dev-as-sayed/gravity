@@ -257,16 +257,15 @@ model User {
   updatedAt      DateTime  @updatedAt
 
   // Profile
-  name               String?
-  profileImage       String?
-  bio                String?
-  dateOfBirth        DateTime?
-  gender             Gender?
-  address            String?
-  city               String?
-  state              String?
-  pincode            String?
- 
+  name         String?
+  profileImage String?
+  bio          String?
+  dateOfBirth  DateTime?
+  gender       Gender?
+  address      String?
+  city         String?
+  state        String?
+  pincode      String?
 
   // Security
   twoFactorEnabled   Boolean   @default(false)
@@ -280,10 +279,10 @@ model User {
   refreshToken       String?
 
   // Relations based on role
-  teacher            Teacher?
-  moderator          Moderator?
-  student            Student?
-  guardian           Guardian?
+  teacher   Teacher?
+  moderator Moderator?
+  student   Student?
+  guardian  Guardian?
 
   // Notifications
   notifications           Notification[]
@@ -293,19 +292,27 @@ model User {
   sessions Session[]
 
   // Audit logs
-  auditLogs     AuditLog[]
-  otps          OTP[]
-  deviceTokens  DeviceToken[]
-  userActivity  UserActivity[]
-  
+  auditLogs    AuditLog[]
+  otps         OTP[]
+  deviceTokens DeviceToken[]
+  userActivity UserActivity[]
+
   // Support tickets
-  supportTickets      SupportTicket[] @relation("UserTickets")
-  assignedTickets     SupportTicket[] @relation("AssignedTickets")
-  ticketMessages      TicketMessage[] @relation("TicketSender")
+  supportTickets  SupportTicket[] @relation("UserTickets")
+  assignedTickets SupportTicket[] @relation("AssignedTickets")
+  ticketMessages  TicketMessage[] @relation("TicketSender")
 
   // Referrals
-  referralsMade       Referral[]      @relation("Referrer")
-  referralsReceived   Referral[]      @relation("Referred")
+  referralsMade     Referral[] @relation("Referrer")
+  referralsReceived Referral[] @relation("Referred")
+
+  // Messages
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+
+  // Reported content
+  reportedContentReports ReportedContent[] @relation("Reporter")
+  moderatedReports       ReportedContent[] @relation("Moderator")
 
   @@index([email])
   @@index([phone])
@@ -318,8 +325,7 @@ model User {
 // TEACHER MODEL - Add missing comments relation
 // ==================================================
 
-
- model Teacher {
+model Teacher {
   id     String @id @default(cuid())
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -343,52 +349,53 @@ model User {
   upiId       String?
 
   // Settings
-  settings Json? // Teacher preferences
+  settings    Json? // Teacher preferences
   officeHours Json? // Available hours for consultation
 
   // Social Links
-  website     String?
-  linkedin    String?
-  youtube     String?
-  twitter     String?
+  website  String?
+  linkedin String?
+  youtube  String?
+  twitter  String?
 
   // Stats
-  totalStudents    Int @default(0)
-  averageRating    Float @default(0)
-  totalCourses     Int @default(0)
-  totalBatches     Int @default(0)
-  totalReviews     Int @default(0)
+  totalStudents Int   @default(0)
+  averageRating Float @default(0)
+  totalCourses  Int   @default(0)
+  totalBatches  Int   @default(0)
+  totalReviews  Int   @default(0)
 
   // Post related relations
-  postReactions        PostReaction[]        @relation("TeacherPostReactions")
-  commentReactions     CommentReaction[]     @relation("TeacherCommentReactions")
-  postBookmarks        PostBookmark[]        @relation("TeacherPostBookmarks")
-  pollVotes            PollVote[]            @relation("TeacherPollVotes")
-  postViews            PostView[]            @relation("TeacherPostViews")
-  postShares           PostShare[]           @relation("TeacherPostShares")
-  postCollections      PostCollection[]      @relation("TeacherPostCollections")
-  
-  // Comments relation - FIXED: removed fields and references
-  comments             Comment[]             // This creates the one-to-many relation with Comment.teacher
-  
-  // Existing relations
-  batches              Batch[]               @relation("TeacherBatches")
-  courses              Course[]              @relation("TeacherCourses")
-  exams                Exam[]                @relation("TeacherExams")
-  quizzes              Quiz[]                @relation("TeacherQuizzes")
-  notes                Note[]                @relation("TeacherNotes")
-  blogs                Blog[]                @relation("TeacherBlogs")
-  posts                Post[]                @relation("TeacherPosts")
-  doubts               Doubt[]               @relation("TeacherDoubts")
-  doubtAnswers         DoubtAnswer[]         @relation("TeacherDoubtAnswers")
-  assignments          Assignment[]          @relation("TeacherAssignments")
-  certificates         Certificate[]         @relation("TeacherCertificates")
-  liveSessions         LiveSession[]         @relation("TeacherSessions")
-  announcements        Announcement[]        @relation("TeacherAnnouncements")
+  postReactions    PostReaction[]    @relation("TeacherPostReactions")
+  commentReactions CommentReaction[] @relation("TeacherCommentReactions")
+  postBookmarks    PostBookmark[]    @relation("TeacherPostBookmarks")
+  pollVotes        PollVote[]        @relation("TeacherPollVotes")
+  postViews        PostView[]        @relation("TeacherPostViews")
+  postShares       PostShare[]       @relation("TeacherPostShares")
+  postCollections  PostCollection[]  @relation("TeacherPostCollections")
 
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
+  // Comments relation - FIXED: removed fields and references
+  comments Comment[] // This creates the one-to-many relation with Comment.teacher
+
+  // Existing relations
+  batches       Batch[]        @relation("TeacherBatches")
+  courses       Course[]       @relation("TeacherCourses")
+  exams         Exam[]         @relation("TeacherExams")
+  quizzes       Quiz[]         @relation("TeacherQuizzes")
+  notes         Note[]         @relation("TeacherNotes")
+  blogs         Blog[]         @relation("TeacherBlogs")
+  posts         Post[]         @relation("TeacherPosts")
+  doubts        Doubt[]        @relation("TeacherDoubts")
+  doubtAnswers  DoubtAnswer[]  @relation("TeacherDoubtAnswers")
+  assignments   Assignment[]   @relation("TeacherAssignments")
+  certificates  Certificate[]  @relation("TeacherCertificates")
+  liveSessions  LiveSession[]  @relation("TeacherSessions")
+  announcements Announcement[] @relation("TeacherAnnouncements")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
+
 // Moderator Profile
 model Moderator {
   id     String @id @default(cuid())
@@ -404,8 +411,8 @@ model Moderator {
 
   // Activity
   lastActive     DateTime?
-  actionsTaken   Int @default(0)
-  resolvedIssues Int @default(0)
+  actionsTaken   Int       @default(0)
+  resolvedIssues Int       @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -418,16 +425,16 @@ model Student {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Personal Info
-  name          String
-  dateOfBirth   DateTime?
-  gender        Gender?
-  address       String?
-  city          String?
-  state         String?
-  country       String?
-  pincode       String?
-  profileImage  String?
-  coverImage    String?
+  name         String
+  dateOfBirth  DateTime?
+  gender       Gender?
+  address      String?
+  city         String?
+  state        String?
+  country      String?
+  pincode      String?
+  profileImage String?
+  coverImage   String?
 
   // Academic
   institute          String?
@@ -449,34 +456,34 @@ model Student {
   examTargets       String[] // ["JEE", "NEET", etc.]
 
   // Stats
-  totalCourses     Int @default(0)
-  averageScore     Float @default(0)
-  attendanceRate   Float @default(0)
-  rank             Int?
-  percentile       Float?
+  totalCourses   Int    @default(0)
+  averageScore   Float  @default(0)
+  attendanceRate Float  @default(0)
+  rank           Int?
+  percentile     Float?
 
   // Relations
-  enrollments      Enrollment[]
-  attendances      Attendance[]
-  quizResults      QuizResult[]
-  examResults      ExamResult[]
-  payments         Payment[]
-  notes            Note[] // Downloaded notes
-  wishlist         Batch[]           @relation("StudentWishlist")
-  posts            Post[]            @relation("StudentPosts")
-  comments         Comment[]         @relation("StudentComments")
-  doubts           Doubt[]           @relation("StudentDoubts")
-  doubtAnswers     DoubtAnswer[]     @relation("StudentDoubtAnswers")
-  submissions      AssignmentSubmission[]
-  batchReviews     BatchReview[]
+  enrollments           Enrollment[]
+  attendances           Attendance[]
+  quizResults           QuizResult[]
+  examResults           ExamResult[]
+  payments              Payment[]
+  notes                 Note[] // Downloaded notes
+  wishlist              Batch[]                 @relation("StudentWishlist")
+  posts                 Post[]                  @relation("StudentPosts")
+  comments              Comment[]               @relation("StudentComments")
+  doubts                Doubt[]                 @relation("StudentDoubts")
+  doubtAnswers          DoubtAnswer[]           @relation("StudentDoubtAnswers")
+  submissions           AssignmentSubmission[]
+  batchReviews          BatchReview[]
   liveSessionAttendance LiveSessionAttendance[] @relation("StudentSessionAttendance")
-  postShares       PostShare[]       @relation("StudentPostShares")
-  postReactions        PostReaction[]        @relation("StudentReactions")
-  commentReactions     CommentReaction[]     @relation("StudentCommentReactions")
-  postBookmarks        PostBookmark[]        @relation("StudentBookmarks")
-  pollVotes            PollVote[]            @relation("StudentPollVotes")
-  postViews            PostView[]            @relation("StudentPostViews")
-  postCollections      PostCollection[]      @relation("StudentCollections")
+  postShares            PostShare[]             @relation("StudentPostShares")
+  postReactions         PostReaction[]          @relation("StudentReactions")
+  commentReactions      CommentReaction[]       @relation("StudentCommentReactions")
+  postBookmarks         PostBookmark[]          @relation("StudentBookmarks")
+  pollVotes             PollVote[]              @relation("StudentPollVotes")
+  postViews             PostView[]              @relation("StudentPostViews")
+  postCollections       PostCollection[]        @relation("StudentCollections")
 
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -496,16 +503,16 @@ model Guardian {
   income       Float?
 
   // Relations
-  students         Student[] @relation("StudentGuardian")
+  students Student[] @relation("StudentGuardian")
 
-  postReactions        PostReaction[]        @relation("GuardianReactions")
-  commentReactions     CommentReaction[]     @relation("GuardianCommentReactions")
-  postBookmarks        PostBookmark[]        @relation("GuardianBookmarks")
-  pollVotes            PollVote[]            @relation("GuardianPollVotes")
-  postViews            PostView[]            @relation("GuardianPostViews")
-  postShares           PostShare[]           @relation("GuardianPostShares")
-  postCollections      PostCollection[]      @relation("GuardianCollections")
-  comments             Comment[]             @relation("GuardianComments")
+  postReactions    PostReaction[]    @relation("GuardianReactions")
+  commentReactions CommentReaction[] @relation("GuardianCommentReactions")
+  postBookmarks    PostBookmark[]    @relation("GuardianBookmarks")
+  pollVotes        PollVote[]        @relation("GuardianPollVotes")
+  postViews        PostView[]        @relation("GuardianPostViews")
+  postShares       PostShare[]       @relation("GuardianPostShares")
+  postCollections  PostCollection[]  @relation("GuardianCollections")
+  comments         Comment[]         @relation("GuardianComments")
 
   // Preferences
   notificationPrefs Json? // How they want to be notified about student progress
@@ -534,21 +541,21 @@ model Course {
   teacher   Teacher @relation("TeacherCourses", fields: [teacherId], references: [id])
 
   // Course details
-  duration     Int? // in hours
-  level        DifficultyLevel @default(BEGINNER)
-  prerequisites String[]
+  duration         Int? // in hours
+  level            DifficultyLevel @default(BEGINNER)
+  prerequisites    String[]
   learningOutcomes String[]
 
   // Pricing
-  price        Float
-  offerPrice   Float?
-  isFree       Boolean @default(false)
+  price      Float
+  offerPrice Float?
+  isFree     Boolean @default(false)
 
   // Stats
-  totalBatches     Int @default(0)
-  totalStudents    Int @default(0)
-  averageRating    Float @default(0)
-  totalReviews     Int @default(0)
+  totalBatches  Int   @default(0)
+  totalStudents Int   @default(0)
+  averageRating Float @default(0)
+  totalReviews  Int   @default(0)
 
   // SEO
   metaTitle       String?
@@ -556,8 +563,8 @@ model Course {
   metaKeywords    String[]
 
   // Relations
-  batches   Batch[]
-  posts     Post[] @relation("CoursePosts")
+  batches Batch[]
+  posts   Post[]  @relation("CoursePosts")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -579,15 +586,13 @@ model Batch {
   teacherId String
   teacher   Teacher @relation("TeacherBatches", fields: [teacherId], references: [id])
 
-
-
   // Batch Details
   subject     String
   description String?
   mode        BatchMode @default(ONLINE)
   language    String?   @default("English")
 
-  moderators Moderator[] @relation("ModeratorBatches")
+  moderators Moderator[]    @relation("ModeratorBatches")
   sessions   BatchSession[]
 
   // Capacity
@@ -597,11 +602,11 @@ model Batch {
   minimumStudents    Int? // Minimum required to start
 
   // Schedule
-  startDate    DateTime
-  endDate      DateTime?
-  schedule     Json? // Weekly schedule {monday: "10:00-12:00", ...}
-  totalClasses Int?
-  completedClasses Int @default(0)
+  startDate        DateTime
+  endDate          DateTime?
+  schedule         Json? // Weekly schedule {monday: "10:00-12:00", ...}
+  totalClasses     Int?
+  completedClasses Int       @default(0)
 
   // Live Class
   liveClassLink     String?
@@ -634,9 +639,9 @@ model Batch {
   visibility     String  @default("PUBLIC") // PUBLIC, PRIVATE, LINK_ONLY
 
   // Syllabus
-  syllabus       Json?
-  topics         String[]
-  prerequisites  String[]
+  syllabus      Json?
+  topics        String[]
+  prerequisites String[]
 
   // Ratings
   averageRating Float @default(0)
@@ -647,18 +652,18 @@ model Batch {
   updatedAt DateTime @updatedAt
 
   // Relations
-  enrollments      Enrollment[]
-  notes            Note[]
-  quizzes          Quiz[]
-  exams            Exam[]
-  attendances      Attendance[]
-  announcements    Announcement[]
-  assignments      Assignment[]
-  liveSessions     LiveSession[]
-  doubts           Doubt[]
-  materials        BatchMaterial[]
-  reviews          BatchReview[]
-  posts            Post[]            @relation("BatchPosts")
+  enrollments   Enrollment[]
+  notes         Note[]
+  quizzes       Quiz[]
+  exams         Exam[]
+  attendances   Attendance[]
+  announcements Announcement[]
+  assignments   Assignment[]
+  liveSessions  LiveSession[]
+  doubts        Doubt[]
+  materials     BatchMaterial[]
+  reviews       BatchReview[]
+  posts         Post[]          @relation("BatchPosts")
 
   // Wishlisted by students
   wishlistedBy      Student[]         @relation("StudentWishlist")
@@ -676,10 +681,10 @@ model BatchSession {
   batchId String
   batch   Batch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
-  name      String   // Morning, Evening, Night
+  name      String // Morning, Evening, Night
   days      String[] // ["monday","wednesday","friday"]
-  startTime String   // "08:00"
-  endTime   String   // "10:00"
+  startTime String // "08:00"
+  endTime   String // "10:00"
 
   liveSessionLink String?
   room            String?
@@ -693,9 +698,9 @@ model BatchSession {
 
 // Batch Materials
 model BatchMaterial {
-  id        String @id @default(cuid())
-  batchId   String
-  batch     Batch  @relation(fields: [batchId], references: [id])
+  id      String @id @default(cuid())
+  batchId String
+  batch   Batch  @relation(fields: [batchId], references: [id])
 
   title       String
   description String?
@@ -703,13 +708,13 @@ model BatchMaterial {
   fileUrl     String?
   fileSize    Int?
   duration    Int? // For videos
-  isFree      Boolean @default(false)
+  isFree      Boolean      @default(false)
 
-  uploadedBy  String // Teacher/Moderator ID
-  uploadedAt  DateTime @default(now())
+  uploadedBy String // Teacher/Moderator ID
+  uploadedAt DateTime @default(now())
 
-  downloads   Int @default(0)
-  views       Int @default(0)
+  downloads Int @default(0)
+  views     Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -773,15 +778,15 @@ model Enrollment {
 
 // Installments
 model Installment {
-  id           String @id @default(cuid())
+  id           String     @id @default(cuid())
   enrollmentId String
   enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
 
-  amount      Float
-  dueDate     DateTime
-  paidDate    DateTime?
-  status      PaymentStatus @default(PENDING)
-  paymentId   String? // Link to payment once paid
+  amount    Float
+  dueDate   DateTime
+  paidDate  DateTime?
+  status    PaymentStatus @default(PENDING)
+  paymentId String? // Link to payment once paid
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -789,16 +794,16 @@ model Installment {
 
 // Batch Reviews
 model BatchReview {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   batchId   String
-  batch     Batch  @relation(fields: [batchId], references: [id])
+  batch     Batch   @relation(fields: [batchId], references: [id])
   studentId String
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  rating     Int // 1-5
-  comment    String?
-  pros       String[]
-  cons       String[]
+  rating  Int // 1-5
+  comment String?
+  pros    String[]
+  cons    String[]
 
   isAnonymous Boolean @default(false)
   isVerified  Boolean @default(false) // Verified purchase
@@ -823,10 +828,10 @@ model Payment {
   student   Student @relation(fields: [studentId], references: [id])
 
   // Payment Details
-  amount     Float
-  paidAmount Float
-  dueAmount  Float?
-  tax        Float? @default(0)
+  amount      Float
+  paidAmount  Float
+  dueAmount   Float?
+  tax         Float? @default(0)
   totalAmount Float?
 
   method PaymentMethod
@@ -838,10 +843,10 @@ model Payment {
   gatewayResponse Json? // Store raw gateway response
 
   // Card Details (masked)
-  cardLast4   String?
-  cardBrand   String?
-  upiId       String?
-  bankName    String?
+  cardLast4 String?
+  cardBrand String?
+  upiId     String?
+  bankName  String?
 
   // Manual Payment
   manualReference String? // Bank slip number, bKash TrxID
@@ -861,10 +866,10 @@ model Payment {
   lastReminderSent DateTime?
 
   // Refund
-  refundAmount   Float?
-  refundReason   String?
-  refundedAt     DateTime?
-  refundId       String?
+  refundAmount Float?
+  refundReason String?
+  refundedAt   DateTime?
+  refundId     String?
 
   notes    String?
   metadata Json?
@@ -908,9 +913,9 @@ model Note {
   topics  String[] // Multiple topics
 
   // Access
-  isPublic   Boolean @default(false)
-  isPremium  Boolean @default(false)
-  price      Float? // if premium
+  isPublic    Boolean @default(false)
+  isPremium   Boolean @default(false)
+  price       Float? // if premium
   freePreview Boolean @default(false) // First few pages free
 
   // Stats
@@ -920,14 +925,14 @@ model Note {
   saves     Int @default(0)
 
   // Tags
-  tags      String[]
+  tags       String[]
   difficulty DifficultyLevel @default(INTERMEDIATE)
 
   // Downloads tracking
   downloadedBy Student[]
-  
+
   // Fixed savedBy relation
-  savedBy      PostBookmark[] @relation("SavedNotes")
+  savedBy PostBookmark[] @relation("SavedNotes")
 
   // SEO
   metaTitle       String?
@@ -942,7 +947,6 @@ model Note {
   @@index([subject])
   @@index([isPublic])
 }
-
 
 // ==================================================
 // QUIZ SYSTEM
@@ -961,9 +965,9 @@ model Quiz {
   batch   Batch?  @relation(fields: [batchId], references: [id])
 
   // Quiz Settings
-  timeLimit    Int? // in minutes
-  totalMarks   Int
-  passingMarks Int?
+  timeLimit       Int? // in minutes
+  totalMarks      Int
+  passingMarks    Int?
   negativeMarking Float @default(0)
 
   questions Question[]
@@ -983,7 +987,7 @@ model Quiz {
   maxAttempts     Int     @default(1)
 
   // Attempts
-  attempts    QuizAttempt[]
+  attempts QuizAttempt[]
 
   // Metadata
   difficulty DifficultyLevel @default(INTERMEDIATE)
@@ -991,10 +995,10 @@ model Quiz {
   topics     String[]
 
   // Stats
-  totalAttempts    Int @default(0)
-  averageScore     Float @default(0)
-  highestScore     Float @default(0)
-  passRate         Float @default(0)
+  totalAttempts Int   @default(0)
+  averageScore  Float @default(0)
+  highestScore  Float @default(0)
+  passRate      Float @default(0)
 
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -1020,15 +1024,15 @@ model Question {
   negativeMarks Float @default(0)
 
   // For matching questions
-  matchPairs    Json? // {left: ["A", "B"], right: ["1", "2"], correct: {"A":"1", "B":"2"}}
+  matchPairs Json? // {left: ["A", "B"], right: ["1", "2"], correct: {"A":"1", "B":"2"}}
 
   // Image/Media
-  imageUrl      String?
-  audioUrl      String?
+  imageUrl String?
+  audioUrl String?
 
   // Difficulty
-  difficulty    DifficultyLevel @default(INTERMEDIATE)
-  topic         String?
+  difficulty DifficultyLevel @default(INTERMEDIATE)
+  topic      String?
 
   order Int
 
@@ -1048,8 +1052,8 @@ model QuizAttempt {
   student   Student @relation(fields: [studentId], references: [id])
 
   // Attempt Details
-  attemptNumber Int      @default(1)
-  startTime     DateTime @default(now())
+  attemptNumber Int       @default(1)
+  startTime     DateTime  @default(now())
   endTime       DateTime?
 
   answers    Json? // Store student answers
@@ -1059,8 +1063,8 @@ model QuizAttempt {
 
   // Detailed analysis
   questionWiseAnalysis Json? // Which questions correct/wrong
-  timeSpent           Int? // Total seconds spent
-  sectionWiseScore    Json? // Score per section
+  timeSpent            Int? // Total seconds spent
+  sectionWiseScore     Json? // Score per section
 
   // Auto-graded
   autoGraded Boolean @default(true)
@@ -1069,16 +1073,16 @@ model QuizAttempt {
   isCompleted Boolean @default(false)
 
   // Feedback
-  feedback    String?
-  rating      Int? // Student rating of quiz
+  feedback String?
+  rating   Int? // Student rating of quiz
 
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   quizResult QuizResult?
 
+  @@unique([quizId, studentId, attemptNumber])
   @@index([quizId])
   @@index([studentId])
-  @@unique([quizId, studentId, attemptNumber])
 }
 
 model QuizResult {
@@ -1106,7 +1110,7 @@ model QuizResult {
   timeAnalysis Json? // Time spent per question
 
   // Feedback
-  feedback String?
+  feedback        String?
   recommendations String[] // Suggested topics to review
 
   // Certificate - FIXED with fields and references
@@ -1120,7 +1124,7 @@ model QuizResult {
 }
 
 model Certificate {
-  id          String @id @default(cuid())
+  id                String @id @default(cuid())
   certificateNumber String @unique
 
   // Type
@@ -1129,39 +1133,39 @@ model Certificate {
   description String?
 
   // Recipient
-  studentId   String
+  studentId String
 
   // Issuer
-  teacherId   String?
-  teacher     Teacher? @relation("TeacherCertificates", fields: [teacherId], references: [id])
-  batchId     String?
-  quizId      String?
-  examId      String?
+  teacherId String?
+  teacher   Teacher? @relation("TeacherCertificates", fields: [teacherId], references: [id])
+  batchId   String?
+  quizId    String?
+  examId    String?
 
   // Details
-  issueDate   DateTime @default(now())
-  expiryDate  DateTime?
-  grade       String?
-  score       Float?
-  duration    String? // Course duration
+  issueDate  DateTime  @default(now())
+  expiryDate DateTime?
+  grade      String?
+  score      Float?
+  duration   String? // Course duration
 
   // File
-  pdfUrl      String?
-  imageUrl    String?
-  metadata    Json?
+  pdfUrl   String?
+  imageUrl String?
+  metadata Json?
 
   // Verification
-  isVerified  Boolean @default(true)
-  verifiedBy  String?
-  verifiedAt  DateTime?
+  isVerified Boolean   @default(true)
+  verifiedBy String?
+  verifiedAt DateTime?
 
   // Sharing
   shareableLink String? @unique
-  viewCount     Int @default(0)
+  viewCount     Int     @default(0)
 
   // Relations - FIXED with proper field references
-  quizResults   QuizResult[] @relation("QuizResultCertificate")
-  examResults   ExamResult[] @relation("ExamResultCertificate")
+  quizResults QuizResult[] @relation("QuizResultCertificate")
+  examResults ExamResult[] @relation("ExamResultCertificate")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1169,7 +1173,6 @@ model Certificate {
   @@index([studentId])
   @@index([certificateNumber])
 }
-
 
 // ==================================================
 // EXAM MANAGEMENT
@@ -1194,42 +1197,42 @@ model Exam {
   passMarks Int?
 
   // Schedule
-  examDate  DateTime
-  startTime DateTime
-  endTime   DateTime
-  duration  Int // in minutes
-  lateEntryAllowed Boolean @default(false)
-  earlyExitAllowed Boolean @default(true)
+  examDate         DateTime
+  startTime        DateTime
+  endTime          DateTime
+  duration         Int // in minutes
+  lateEntryAllowed Boolean  @default(false)
+  earlyExitAllowed Boolean  @default(true)
 
   // Grading
   gradingType       String // AUTO, MANUAL, HYBRID
-  isResultPublished Boolean @default(false)
+  isResultPublished Boolean   @default(false)
   resultDate        DateTime?
 
   // Questions
   questionPaper String? // PDF URL
   answerSheet   String? // PDF URL
-  instructions   String?
+  instructions  String?
 
   // Results
   results ExamResult[]
 
   // Settings
-  allowReview      Boolean @default(false)
-  showRank         Boolean @default(true)
-  showPercentile   Boolean @default(true)
-  allowRecheck     Boolean @default(false)
-  recheckFee       Float? @default(0)
+  allowReview    Boolean @default(false)
+  showRank       Boolean @default(true)
+  showPercentile Boolean @default(true)
+  allowRecheck   Boolean @default(false)
+  recheckFee     Float?  @default(0)
 
   // Status
   status ExamStatus @default(DRAFT)
 
   // Stats
-  totalStudents  Int @default(0)
-  appearedCount  Int @default(0)
-  passedCount    Int @default(0)
-  averageMarks   Float @default(0)
-  highestMarks   Float @default(0)
+  totalStudents Int   @default(0)
+  appearedCount Int   @default(0)
+  passedCount   Int   @default(0)
+  averageMarks  Float @default(0)
+  highestMarks  Float @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1254,19 +1257,19 @@ model ExamResult {
   percentage    Float
 
   // Details
-  grade    String?
-  rank     Int?
+  grade      String?
+  rank       Int?
   percentile Float?
-  position String? // 1st, 2nd, 3rd, etc.
+  position   String? // 1st, 2nd, 3rd, etc.
 
   // Subject-wise marks
   subjectWiseMarks Json? // {"physics": 75, "math": 80}
   topicWiseMarks   Json? // {"kinematics": 15, "optics": 20}
 
   // Answer Script
-  answerScript String? // PDF URL
+  answerScript    String? // PDF URL
   answerScriptUrl String?
-  reviewedBy    String?
+  reviewedBy      String?
 
   // Teacher Feedback
   feedback String?
@@ -1319,9 +1322,9 @@ model Attendance {
   duration     Int? // in minutes
 
   // For online classes
-  ipAddress  String?
-  deviceInfo String?
-  location   String?
+  ipAddress      String?
+  deviceInfo     String?
+  location       String?
   connectionData Json? // Network info
 
   // Marked by
@@ -1329,9 +1332,9 @@ model Attendance {
   verified Boolean @default(false)
 
   // Late reason
-  lateReason  String?
-  excusedBy   String?
-  excusedAt   DateTime?
+  lateReason String?
+  excusedBy  String?
+  excusedAt  DateTime?
 
   notes String?
 
@@ -1348,15 +1351,15 @@ model Attendance {
 // ==================================================
 
 model LiveSession {
-  id        String @id @default(cuid())
-  title     String
+  id          String  @id @default(cuid())
+  title       String
   description String?
 
   teacherId String
   teacher   Teacher @relation("TeacherSessions", fields: [teacherId], references: [id])
 
-  batchId   String
-  batch     Batch   @relation(fields: [batchId], references: [id])
+  batchId String
+  batch   Batch  @relation(fields: [batchId], references: [id])
 
   // Schedule
   startTime DateTime
@@ -1364,27 +1367,27 @@ model LiveSession {
   duration  Int // in minutes
 
   // Meeting details
-  meetingUrl    String?
-  platform      String // Zoom, Google Meet, etc.
-  meetingId     String?
+  meetingUrl      String?
+  platform        String // Zoom, Google Meet, etc.
+  meetingId       String?
   meetingPassword String?
-  recordingUrl  String? // Post-session recording
+  recordingUrl    String? // Post-session recording
 
   // Status
-  isLive        Boolean @default(false)
-  isCompleted   Boolean @default(false)
-  isRecorded    Boolean @default(false)
+  isLive             Boolean @default(false)
+  isCompleted        Boolean @default(false)
+  isRecorded         Boolean @default(false)
   recordingAvailable Boolean @default(false)
 
   // Attendance
-  attendees     LiveSessionAttendance[]
-  attendanceCount Int @default(0)
+  attendees       LiveSessionAttendance[]
+  attendanceCount Int                     @default(0)
 
   // Materials
-  resources     Json? // Links, files shared during session
+  resources Json? // Links, files shared during session
 
   // Feedback
-  feedback      Json? // Session feedback from students
+  feedback Json? // Session feedback from students
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1394,22 +1397,22 @@ model LiveSession {
 }
 
 model LiveSessionAttendance {
-  id           String @id @default(cuid())
-  sessionId    String
-  session      LiveSession @relation(fields: [sessionId], references: [id])
-  studentId    String
-  student      Student     @relation("StudentSessionAttendance", fields: [studentId], references: [id])
+  id        String      @id @default(cuid())
+  sessionId String
+  session   LiveSession @relation(fields: [sessionId], references: [id])
+  studentId String
+  student   Student     @relation("StudentSessionAttendance", fields: [studentId], references: [id])
 
-  joinedAt     DateTime?
-  leftAt       DateTime?
-  duration     Int? // seconds
-  isPresent    Boolean @default(false)
+  joinedAt  DateTime?
+  leftAt    DateTime?
+  duration  Int? // seconds
+  isPresent Boolean   @default(false)
 
   // Connection details
-  ipAddress    String?
-  deviceInfo   String?
+  ipAddress  String?
+  deviceInfo String?
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([sessionId, studentId])
 }
@@ -1419,42 +1422,42 @@ model LiveSessionAttendance {
 // ==================================================
 
 model Assignment {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   description String?
 
   teacherId String
   teacher   Teacher @relation("TeacherAssignments", fields: [teacherId], references: [id])
 
-  batchId   String
-  batch     Batch   @relation(fields: [batchId], references: [id])
+  batchId String
+  batch   Batch  @relation(fields: [batchId], references: [id])
 
   // Details
-  type        String // HOMEWORK, PROJECT, PRACTICE
-  totalMarks  Int
+  type         String // HOMEWORK, PROJECT, PRACTICE
+  totalMarks   Int
   passingMarks Int?
-  weightage   Float? // Weightage in final grade
+  weightage    Float? // Weightage in final grade
 
   // Files
   questionFile String? // PDF URL
   resources    Json? // Additional resources
 
   // Schedule
-  issuedDate  DateTime @default(now())
-  dueDate     DateTime
-  lateSubmission Boolean @default(false)
+  issuedDate     DateTime @default(now())
+  dueDate        DateTime
+  lateSubmission Boolean  @default(false)
   latePenalty    Float? // Percentage deduction
 
   // Status
   status      AssignmentStatus @default(DRAFT)
-  isPublished Boolean @default(false)
+  isPublished Boolean          @default(false)
 
   // Submissions
   submissions AssignmentSubmission[]
 
   // Stats
-  totalSubmissions Int @default(0)
-  gradedCount      Int @default(0)
+  totalSubmissions Int   @default(0)
+  gradedCount      Int   @default(0)
   averageScore     Float @default(0)
 
   createdAt DateTime @default(now())
@@ -1465,21 +1468,21 @@ model Assignment {
 }
 
 model AssignmentSubmission {
-  id           String @id @default(cuid())
+  id           String     @id @default(cuid())
   assignmentId String
   assignment   Assignment @relation(fields: [assignmentId], references: [id])
   studentId    String
   student      Student    @relation(fields: [studentId], references: [id])
 
   // Submission
-  submittedAt  DateTime
-  content      String? // Text answer
-  files        Json? // Submitted files URLs
-  comments     String?
+  submittedAt DateTime
+  content     String? // Text answer
+  files       Json? // Submitted files URLs
+  comments    String?
 
   // Status
-  status       SubmissionStatus @default(SUBMITTED)
-  isLate       Boolean @default(false)
+  status SubmissionStatus @default(SUBMITTED)
+  isLate Boolean          @default(false)
 
   // Grading
   obtainedMarks Float?
@@ -1493,7 +1496,7 @@ model AssignmentSubmission {
   reevalResult    Json?
 
   // Plagiarism
-  plagiarismScore Float? @default(0)
+  plagiarismScore  Float?  @default(0)
   plagiarismReport String?
 
   createdAt DateTime @default(now())
@@ -1508,7 +1511,7 @@ model AssignmentSubmission {
 // ==================================================
 
 model Doubt {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   description String?
 
@@ -1518,23 +1521,23 @@ model Doubt {
 
   // Context
   batchId    String?
-  batch      Batch?   @relation(fields: [batchId], references: [id])
+  batch      Batch?  @relation(fields: [batchId], references: [id])
   subject    String?
   topic      String?
   questionId String? // If related to specific question
 
   // Media
-  images     String[]
-  files      Json?
+  images String[]
+  files  Json?
 
   // Status
-  status     DoubtStatus @default(OPEN)
-  priority   String? // LOW, MEDIUM, HIGH
+  status   DoubtStatus @default(OPEN)
+  priority String? // LOW, MEDIUM, HIGH
 
   // Assignment
   assignedTo String? // Teacher ID
   assignedAt DateTime?
-  teacher    Teacher? @relation("TeacherDoubts", fields: [assignedTo], references: [id])
+  teacher    Teacher?  @relation("TeacherDoubts", fields: [assignedTo], references: [id])
 
   // Resolution
   answers    DoubtAnswer[]
@@ -1546,12 +1549,12 @@ model Doubt {
   feedback           String?
 
   // Stats
-  viewCount  Int @default(0)
+  viewCount   Int @default(0)
   upvoteCount Int @default(0)
 
   // Metadata
-  tags       String[]
-  isPrivate  Boolean @default(false) // Private between student and teacher
+  tags      String[]
+  isPrivate Boolean  @default(false) // Private between student and teacher
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1562,9 +1565,9 @@ model Doubt {
 }
 
 model DoubtAnswer {
-  id       String @id @default(cuid())
-  doubtId  String
-  doubt    Doubt  @relation(fields: [doubtId], references: [id])
+  id      String @id @default(cuid())
+  doubtId String
+  doubt   Doubt  @relation(fields: [doubtId], references: [id])
 
   // Author (Teacher or Student)
   teacherId String?
@@ -1573,16 +1576,16 @@ model DoubtAnswer {
   student   Student? @relation("StudentDoubtAnswers", fields: [studentId], references: [id])
 
   // Content
-  content  String
-  images   String[]
-  files    Json?
+  content String
+  images  String[]
+  files   Json?
 
   // Status
-  isAccepted    Boolean @default(false)
-  isOfficial    Boolean @default(false) // From official teacher
+  isAccepted Boolean @default(false)
+  isOfficial Boolean @default(false) // From official teacher
 
   // Interaction
-  upvotes  Int @default(0)
+  upvotes   Int      @default(0)
   upvotedBy String[]
 
   createdAt DateTime @default(now())
@@ -1590,8 +1593,6 @@ model DoubtAnswer {
 
   @@index([doubtId])
 }
-
-
 
 // ==================================================
 // NOTIFICATION SYSTEM
@@ -1629,7 +1630,7 @@ model Notification {
   actionLabel String?
 
   // Image
-  imageUrl    String?
+  imageUrl String?
 
   createdAt DateTime @default(now())
 
@@ -1669,85 +1670,85 @@ model NotificationPreference {
 
 // Main Post Model
 model Post {
-  id             String         @id @default(cuid())
-  title          String?
-  content        String?        // Rich text content
-  slug           String?        @unique
-  excerpt        String?        // Short description for preview
+  id      String  @id @default(cuid())
+  title   String?
+  content String? // Rich text content
+  slug    String? @unique
+  excerpt String? // Short description for preview
 
   // Media Type
-  type           MediaType      @default(TEXT)
-  status         PostStatus     @default(DRAFT)
-  visibility     PostVisibility @default(PUBLIC)
+  type       MediaType      @default(TEXT)
+  status     PostStatus     @default(DRAFT)
+  visibility PostVisibility @default(PUBLIC)
 
   // Author (can be Teacher or Student)
-  teacherId      String?
-  teacher        Teacher?       @relation("TeacherPosts", fields: [teacherId], references: [id])
-  
-  studentId      String?
-  student        Student?       @relation("StudentPosts", fields: [studentId], references: [id])
+  teacherId String?
+  teacher   Teacher? @relation("TeacherPosts", fields: [teacherId], references: [id])
+
+  studentId String?
+  student   Student? @relation("StudentPosts", fields: [studentId], references: [id])
 
   // If post is related to specific batch/course
-  batchId        String?
-  batch          Batch?         @relation("BatchPosts", fields: [batchId], references: [id])
-  
-  courseId       String?
-  course         Course?        @relation("CoursePosts", fields: [courseId], references: [id])
+  batchId String?
+  batch   Batch?  @relation("BatchPosts", fields: [batchId], references: [id])
+
+  courseId String?
+  course   Course? @relation("CoursePosts", fields: [courseId], references: [id])
 
   // Media Attachments
-  media          MediaAttachment[]
+  media MediaAttachment[]
 
   // Links
-  linkUrl        String?        // For LINK type posts
-  linkTitle      String?
+  linkUrl         String? // For LINK type posts
+  linkTitle       String?
   linkDescription String?
-  linkImage      String?
+  linkImage       String?
 
   // Polls (optional)
-  poll           Poll?
+  poll Poll?
 
   // Statistics
-  views          Int            @default(0)
-  uniqueViews    Int            @default(0)
-  shares         Int            @default(0)
-  saves          Int            @default(0)
-  
+  views       Int @default(0)
+  uniqueViews Int @default(0)
+  shares      Int @default(0)
+  saves       Int @default(0)
+
   // Engagement
-  reactions      PostReaction[]
-  comments       Comment[]
-  bookmarks      PostBookmark[]
-  postViews      PostView[]     @relation("ViewedPosts")
-  postShares     PostShare[]    @relation("SharedPosts")
+  reactions  PostReaction[]
+  comments   Comment[]
+  bookmarks  PostBookmark[]
+  postViews  PostView[]     @relation("ViewedPosts")
+  postShares PostShare[]    @relation("SharedPosts")
 
   // Tags
-  tags           String[]
-  topics         String[]       // Physics topics covered
+  tags   String[]
+  topics String[] // Physics topics covered
 
   // Featured
-  isFeatured     Boolean        @default(false)
-  isPinned       Boolean        @default(false)
-  pinnedUntil    DateTime?
-  pinnedBy       String?
+  isFeatured  Boolean   @default(false)
+  isPinned    Boolean   @default(false)
+  pinnedUntil DateTime?
+  pinnedBy    String?
 
   // SEO
-  metaTitle      String?
+  metaTitle       String?
   metaDescription String?
-  metaKeywords   String[]
+  metaKeywords    String[]
 
   // Schedule
-  publishedAt    DateTime?
-  scheduledFor   DateTime?
+  publishedAt  DateTime?
+  scheduledFor DateTime?
 
   // Moderation
-  reportedBy     String[]       // User IDs who reported
-  reportCount    Int            @default(0)
-  hiddenReason   String?
-  hiddenBy       String?        // Moderator ID
-  hiddenAt       DateTime?
+  reportedBy   String[] // User IDs who reported
+  reportCount  Int       @default(0)
+  hiddenReason String?
+  hiddenBy     String? // Moderator ID
+  hiddenAt     DateTime?
 
   // Timestamps
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([teacherId])
   @@index([studentId])
@@ -1760,54 +1761,54 @@ model Post {
 
 // Media Attachments
 model MediaAttachment {
-  id             String         @id @default(cuid())
-  postId         String
-  post           Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   // File details
-  url            String
-  type           String         // "image/jpeg", "video/mp4", etc.
-  category       MediaType      @default(IMAGE)
-  
-  // Metadata
-  filename       String
-  fileSize       Int            // in bytes
-  duration       Int?           // for videos (seconds)
-  width          Int?           // for images
-  height         Int?           // for images
-  thumbnail      String?        // for videos
-  
-  // Caption
-  caption        String?
-  altText        String?        // for accessibility
-  
-  // Order
-  displayOrder   Int            @default(0)
+  url      String
+  type     String // "image/jpeg", "video/mp4", etc.
+  category MediaType @default(IMAGE)
 
-  createdAt      DateTime       @default(now())
+  // Metadata
+  filename  String
+  fileSize  Int // in bytes
+  duration  Int? // for videos (seconds)
+  width     Int? // for images
+  height    Int? // for images
+  thumbnail String? // for videos
+
+  // Caption
+  caption String?
+  altText String? // for accessibility
+
+  // Order
+  displayOrder Int @default(0)
+
+  createdAt DateTime @default(now())
 
   @@index([postId])
 }
 
 // Post Reactions (Likes, etc.)
 model PostReaction {
-  id             String         @id @default(cuid())
-  postId         String
-  post           Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   // User who reacted
-  teacherId      String?
-  teacher        Teacher?       @relation("TeacherPostReactions", fields: [teacherId], references: [id])
-  
-  studentId      String?
-  student        Student?       @relation("StudentReactions", fields: [studentId], references: [id])
+  teacherId String?
+  teacher   Teacher? @relation("TeacherPostReactions", fields: [teacherId], references: [id])
 
-  guardianId     String?
-  guardian       Guardian?      @relation("GuardianReactions", fields: [guardianId], references: [id])
+  studentId String?
+  student   Student? @relation("StudentReactions", fields: [studentId], references: [id])
 
-  type           ReactionType   @default(LIKE)
+  guardianId String?
+  guardian   Guardian? @relation("GuardianReactions", fields: [guardianId], references: [id])
 
-  createdAt      DateTime       @default(now())
+  type ReactionType @default(LIKE)
+
+  createdAt DateTime @default(now())
 
   @@unique([postId, studentId, teacherId, guardianId])
   @@index([postId])
@@ -1817,55 +1818,55 @@ model PostReaction {
 // Comments
 
 model Comment {
-  id             String         @id @default(cuid())
-  content        String         // Comment text
-  postId         String
-  post           Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  content String // Comment text
+  postId  String
+  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   // Parent comment for replies
-  parentId       String?
-  parent         Comment?       @relation("CommentReplies", fields: [parentId], references: [id])
-  replies        Comment[]      @relation("CommentReplies")
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
 
   // Author
-  teacherId      String?
-  teacher        Teacher?       @relation(fields: [teacherId], references: [id])  // This links to Teacher.comments
-  
-  studentId      String?
-  student        Student?       @relation("StudentComments", fields: [studentId], references: [id])
+  teacherId String?
+  teacher   Teacher? @relation(fields: [teacherId], references: [id]) // This links to Teacher.comments
 
-  guardianId     String?
-  guardian       Guardian?      @relation("GuardianComments", fields: [guardianId], references: [id])
+  studentId String?
+  student   Student? @relation("StudentComments", fields: [studentId], references: [id])
+
+  guardianId String?
+  guardian   Guardian? @relation("GuardianComments", fields: [guardianId], references: [id])
 
   // Media in comment
-  mediaUrl       String?
-  mediaType      String?
+  mediaUrl  String?
+  mediaType String?
 
   // Stats
-  likes          Int            @default(0)
-  reactionCount  Int            @default(0)
-  
+  likes         Int @default(0)
+  reactionCount Int @default(0)
+
   // Reactions on comments
-  reactions      CommentReaction[]
+  reactions CommentReaction[]
 
   // Status
-  status         CommentStatus  @default(ACTIVE)
-  isEdited       Boolean        @default(false)
-  editHistory    Json?          // Store previous versions
+  status      CommentStatus @default(ACTIVE)
+  isEdited    Boolean       @default(false)
+  editHistory Json? // Store previous versions
 
   // Moderation
-  reportedBy     String[]       // User IDs who reported
-  reportCount    Int            @default(0)
-  hiddenReason   String?
-  hiddenBy       String?        // Moderator ID
-  hiddenAt       DateTime?
+  reportedBy   String[] // User IDs who reported
+  reportCount  Int       @default(0)
+  hiddenReason String?
+  hiddenBy     String? // Moderator ID
+  hiddenAt     DateTime?
 
   // Metadata
-  ipAddress      String?
-  userAgent      String?
+  ipAddress String?
+  userAgent String?
 
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([postId])
   @@index([parentId])
@@ -1876,54 +1877,54 @@ model Comment {
 
 // Comment Reactions
 model CommentReaction {
-  id             String         @id @default(cuid())
-  commentId      String
-  comment        Comment        @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  commentId String
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   // User who reacted
-  teacherId      String?
-  teacher        Teacher?       @relation("TeacherCommentReactions", fields: [teacherId], references: [id])
-  
-  studentId      String?
-  student        Student?       @relation("StudentCommentReactions", fields: [studentId], references: [id])
+  teacherId String?
+  teacher   Teacher? @relation("TeacherCommentReactions", fields: [teacherId], references: [id])
 
-  guardianId     String?
-  guardian       Guardian?      @relation("GuardianCommentReactions", fields: [guardianId], references: [id])
+  studentId String?
+  student   Student? @relation("StudentCommentReactions", fields: [studentId], references: [id])
 
-  type           ReactionType   @default(LIKE)
+  guardianId String?
+  guardian   Guardian? @relation("GuardianCommentReactions", fields: [guardianId], references: [id])
 
-  createdAt      DateTime       @default(now())
+  type ReactionType @default(LIKE)
+
+  createdAt DateTime @default(now())
 
   @@unique([commentId, studentId, teacherId, guardianId])
 }
 
 // Post Bookmarks/Saves
 model PostBookmark {
-  id             String         @id @default(cuid())
-  postId         String
-  post           Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   // User who bookmarked
-  studentId      String?
-  student        Student?       @relation("StudentBookmarks", fields: [studentId], references: [id])
-  
-  teacherId      String?
-  teacher        Teacher?       @relation("TeacherPostBookmarks", fields: [teacherId], references: [id])
+  studentId String?
+  student   Student? @relation("StudentBookmarks", fields: [studentId], references: [id])
 
-  guardianId     String?
-  guardian       Guardian?      @relation("GuardianBookmarks", fields: [guardianId], references: [id])
+  teacherId String?
+  teacher   Teacher? @relation("TeacherPostBookmarks", fields: [teacherId], references: [id])
+
+  guardianId String?
+  guardian   Guardian? @relation("GuardianBookmarks", fields: [guardianId], references: [id])
 
   // Folders/Collections
-  collectionId   String?
-  collection     PostCollection? @relation(fields: [collectionId], references: [id])
-  
-  notes          String?        // Personal notes on this post
-  
-  // Fixed Note relation - Added fields and references
-  noteId         String?
-  note           Note?          @relation("SavedNotes", fields: [noteId], references: [id])
+  collectionId String?
+  collection   PostCollection? @relation(fields: [collectionId], references: [id])
 
-  createdAt      DateTime       @default(now())
+  notes String? // Personal notes on this post
+
+  // Fixed Note relation - Added fields and references
+  noteId String?
+  note   Note?   @relation("SavedNotes", fields: [noteId], references: [id])
+
+  createdAt DateTime @default(now())
 
   @@unique([postId, studentId, teacherId, guardianId])
   @@index([collectionId])
@@ -1931,53 +1932,53 @@ model PostBookmark {
 
 // Polls in Posts
 model Poll {
-  id             String         @id @default(cuid())
-  postId         String         @unique
-  post           Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  postId String @unique
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   question       String
-  options        Json           // [{id: "1", text: "Option A", votes: 0}]
-  multipleChoice Boolean        @default(false)
-  
+  options        Json // [{id: "1", text: "Option A", votes: 0}]
+  multipleChoice Boolean @default(false)
+
   // Settings
-  expiresAt      DateTime?
-  isAnonymous    Boolean        @default(false)
-  showResults    Boolean        @default(true)
-  allowNewOptions Boolean       @default(false)
+  expiresAt       DateTime?
+  isAnonymous     Boolean   @default(false)
+  showResults     Boolean   @default(true)
+  allowNewOptions Boolean   @default(false)
 
   // Statistics
-  totalVotes     Int            @default(0)
+  totalVotes Int @default(0)
 
   // Votes
-  votes          PollVote[]
+  votes PollVote[]
 
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Poll Votes
 model PollVote {
-  id             String         @id @default(cuid())
-  pollId         String
-  poll           Poll           @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
 
   // Voter
-  studentId      String?
-  student        Student?       @relation("StudentPollVotes", fields: [studentId], references: [id])
-  
-  teacherId      String?
-  teacher        Teacher?       @relation("TeacherPollVotes", fields: [teacherId], references: [id])
+  studentId String?
+  student   Student? @relation("StudentPollVotes", fields: [studentId], references: [id])
 
-  guardianId     String?
-  guardian       Guardian?      @relation("GuardianPollVotes", fields: [guardianId], references: [id])
+  teacherId String?
+  teacher   Teacher? @relation("TeacherPollVotes", fields: [teacherId], references: [id])
+
+  guardianId String?
+  guardian   Guardian? @relation("GuardianPollVotes", fields: [guardianId], references: [id])
 
   // Selected options (array for multiple choice)
-  selectedOptions String[]      // ["1", "3"]
+  selectedOptions String[] // ["1", "3"]
 
   // IP for anonymous tracking
-  ipAddress      String?
+  ipAddress String?
 
-  createdAt      DateTime       @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([pollId, studentId, teacherId, guardianId])
 }
@@ -1985,60 +1986,60 @@ model PollVote {
 // Post Collections/Folders
 
 model PostCollection {
-  id             String         @id @default(cuid())
-  name           String
-  description    String?
-  slug           String         @unique
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  slug        String  @unique
 
   // Owner
-  studentId      String?
-  student        Student?       @relation("StudentCollections", fields: [studentId], references: [id])
-  
-  teacherId      String?
-  teacher        Teacher?       @relation("TeacherPostCollections", fields: [teacherId], references: [id])
+  studentId String?
+  student   Student? @relation("StudentCollections", fields: [studentId], references: [id])
 
-  guardianId     String?
-  guardian       Guardian?      @relation("GuardianCollections", fields: [guardianId], references: [id])
+  teacherId String?
+  teacher   Teacher? @relation("TeacherPostCollections", fields: [teacherId], references: [id])
+
+  guardianId String?
+  guardian   Guardian? @relation("GuardianCollections", fields: [guardianId], references: [id])
 
   // Collection items
-  bookmarks      PostBookmark[]
+  bookmarks PostBookmark[]
 
   // Privacy
-  isPublic       Boolean        @default(false)
-  shareableLink  String?        @unique
+  isPublic      Boolean @default(false)
+  shareableLink String? @unique
 
   // Cover image
-  coverImage     String?
+  coverImage String?
 
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([studentId])
 }
 
 // Post Views Tracking
 model PostView {
-  id             String         @id @default(cuid())
-  postId         String
-  post           Post           @relation("ViewedPosts", fields: [postId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  postId String
+  post   Post   @relation("ViewedPosts", fields: [postId], references: [id], onDelete: Cascade)
 
   // Viewer
-  studentId      String?
-  student        Student?       @relation("StudentPostViews", fields: [studentId], references: [id])
-  
-  teacherId      String?
-  teacher        Teacher?       @relation("TeacherPostViews", fields: [teacherId], references: [id])
+  studentId String?
+  student   Student? @relation("StudentPostViews", fields: [studentId], references: [id])
 
-  guardianId     String?
-  guardian       Guardian?      @relation("GuardianPostViews", fields: [guardianId], references: [id])
+  teacherId String?
+  teacher   Teacher? @relation("TeacherPostViews", fields: [teacherId], references: [id])
+
+  guardianId String?
+  guardian   Guardian? @relation("GuardianPostViews", fields: [guardianId], references: [id])
 
   // Anonymous view tracking
-  sessionId      String?        // For non-logged in users
-  ipAddress      String?
-  
+  sessionId String? // For non-logged in users
+  ipAddress String?
+
   // View duration
-  viewedAt       DateTime       @default(now())
-  duration       Int?           // seconds spent viewing
+  viewedAt DateTime @default(now())
+  duration Int? // seconds spent viewing
 
   @@index([postId])
   @@index([viewedAt])
@@ -2046,25 +2047,25 @@ model PostView {
 
 // Post Shares
 model PostShare {
-  id             String         @id @default(cuid())
-  postId         String
-  post           Post           @relation("SharedPosts", fields: [postId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  postId String
+  post   Post   @relation("SharedPosts", fields: [postId], references: [id], onDelete: Cascade)
 
   // Sharer
-  studentId      String?
-  student        Student?       @relation("StudentPostShares", fields: [studentId], references: [id])
-  
-  teacherId      String?
-  teacher        Teacher?       @relation("TeacherPostShares", fields: [teacherId], references: [id])
+  studentId String?
+  student   Student? @relation("StudentPostShares", fields: [studentId], references: [id])
 
-  guardianId     String?
-  guardian       Guardian?      @relation("GuardianPostShares", fields: [guardianId], references: [id])
+  teacherId String?
+  teacher   Teacher? @relation("TeacherPostShares", fields: [teacherId], references: [id])
+
+  guardianId String?
+  guardian   Guardian? @relation("GuardianPostShares", fields: [guardianId], references: [id])
 
   // Share details
-  platform       String?        // "facebook", "whatsapp", "copy_link", etc.
-  sharedTo       String?        // specific group/individual
+  platform String? // "facebook", "whatsapp", "copy_link", etc.
+  sharedTo String? // specific group/individual
 
-  createdAt      DateTime       @default(now())
+  createdAt DateTime @default(now())
 }
 
 // ==================================================
@@ -2092,9 +2093,9 @@ model Blog {
   metaKeywords    String[]
 
   // Stats
-  views  Int @default(0)
-  likes  Int @default(0)
-  shares Int @default(0)
+  views    Int  @default(0)
+  likes    Int  @default(0)
+  shares   Int  @default(0)
   readTime Int? // in minutes
 
   // Status
@@ -2106,7 +2107,7 @@ model Blog {
   tags       String[]
 
   // Comments
-  allowComments Boolean @default(true)
+  allowComments Boolean       @default(true)
   comments      BlogComment[]
 
   createdAt DateTime @default(now())
@@ -2117,15 +2118,15 @@ model Blog {
 }
 
 model BlogComment {
-  id        String @id @default(cuid())
-  blogId    String
-  blog      Blog   @relation(fields: [blogId], references: [id])
+  id     String @id @default(cuid())
+  blogId String
+  blog   Blog   @relation(fields: [blogId], references: [id])
 
-  name      String?
-  email     String?
-  content   String
+  name    String?
+  email   String?
+  content String
 
-  status    String @default("PENDING") // PENDING, APPROVED, SPAM
+  status     String  @default("PENDING") // PENDING, APPROVED, SPAM
   isApproved Boolean @default(false)
 
   createdAt DateTime @default(now())
@@ -2185,11 +2186,11 @@ model StudentProgress {
   batch   Batch  @relation(fields: [batchId], references: [id])
 
   // Performance metrics
-  avgQuizScore Float?
-  avgExamScore Float?
-  attendance   Float? // Percentage
-  assignmentsCompleted Int @default(0)
-  totalAssignments Int @default(0)
+  avgQuizScore         Float?
+  avgExamScore         Float?
+  attendance           Float? // Percentage
+  assignmentsCompleted Int    @default(0)
+  totalAssignments     Int    @default(0)
 
   // Weak areas
   weakSubjects String[]
@@ -2201,11 +2202,11 @@ model StudentProgress {
   scoreHistory    Json? // Historical scores
 
   // Last activity
-  lastActive DateTime?
+  lastActive     DateTime?
   totalStudyTime Int? // Total minutes studied
 
   // Predictions
-  predictedScore Int?
+  predictedScore    Int?
   confidenceScore   Float? // 0-1
   recommendedTopics String[]
 
@@ -2225,9 +2226,9 @@ model StudentProgress {
 
 // User Activity Tracking
 model UserActivity {
-  id        String @id @default(cuid())
-  userId    String
-  user      User   @relation(fields: [userId], references: [id])
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   action    String // LOGIN, VIEW_BATCH, TAKE_QUIZ, etc.
   entity    String? // Batch, Quiz, Exam, etc.
@@ -2245,18 +2246,18 @@ model UserActivity {
 
 // Device Tokens for Push Notifications
 model DeviceToken {
-  id        String @id @default(cuid())
-  userId    String
-  user      User   @relation(fields: [userId], references: [id])
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  token     String @unique
-  platform  String // ios, android, web
-  deviceId  String?
-  isActive  Boolean @default(true)
+  token    String  @unique
+  platform String // ios, android, web
+  deviceId String?
+  isActive Boolean @default(true)
 
   lastUsed  DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([userId])
 }
@@ -2266,39 +2267,39 @@ model DeviceToken {
 // ==================================================
 
 model SupportTicket {
-  id          String @id @default(cuid())
+  id           String @id @default(cuid())
   ticketNumber String @unique
 
-  userId      String
-  user        User   @relation("UserTickets", fields: [userId], references: [id])
+  userId String
+  user   User   @relation("UserTickets", fields: [userId], references: [id])
 
   // Ticket details
   subject     String
   description String
   category    String // TECHNICAL, PAYMENT, ACCOUNT, COURSE, OTHER
   priority    SupportTicketPriority @default(MEDIUM)
-  status      SupportTicketStatus @default(OPEN)
+  status      SupportTicketStatus   @default(OPEN)
 
   // Attachments
   attachments Json?
 
   // Assignment
-  assignedTo  String?
-  assignedToUser User? @relation("AssignedTickets", fields: [assignedTo], references: [id])
-  assignedAt  DateTime?
+  assignedTo     String?
+  assignedToUser User?     @relation("AssignedTickets", fields: [assignedTo], references: [id])
+  assignedAt     DateTime?
 
   // Conversation
-  messages    TicketMessage[]
+  messages TicketMessage[]
 
   // Resolution
-  resolvedAt  DateTime?
-  resolvedBy  String?
-  resolution  String?
+  resolvedAt         DateTime?
+  resolvedBy         String?
+  resolution         String?
   satisfactionRating Int? // 1-5
 
   // Metadata
-  source      String? // WEBSITE, APP, EMAIL, PHONE
-  tags        String[]
+  source String? // WEBSITE, APP, EMAIL, PHONE
+  tags   String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2309,16 +2310,16 @@ model SupportTicket {
 }
 
 model TicketMessage {
-  id         String @id @default(cuid())
-  ticketId   String
-  ticket     SupportTicket @relation(fields: [ticketId], references: [id])
+  id       String        @id @default(cuid())
+  ticketId String
+  ticket   SupportTicket @relation(fields: [ticketId], references: [id])
 
-  senderId   String
-  sender     User   @relation("TicketSender", fields: [senderId], references: [id])
+  senderId String
+  sender   User   @relation("TicketSender", fields: [senderId], references: [id])
 
-  message    String
+  message     String
   attachments Json?
-  isInternal Boolean @default(false) // Internal notes
+  isInternal  Boolean @default(false) // Internal notes
 
   createdAt DateTime @default(now())
 
@@ -2426,7 +2427,7 @@ model Coupon {
   applicableCourses String[] // Course IDs
 
   // Per user
-  perUserLimit Int @default(1)
+  perUserLimit  Int     @default(1)
   firstTimeOnly Boolean @default(false)
 
   // Status
@@ -2455,8 +2456,8 @@ model Lead {
   interest String? // Subject or batch
 
   // Status
-  status     String @default("NEW") // NEW, CONTACTED, QUALIFIED, CONVERTED, LOST
-  converted  Boolean @default(false)
+  status      String    @default("NEW") // NEW, CONTACTED, QUALIFIED, CONVERTED, LOST
+  converted   Boolean   @default(false)
   convertedAt DateTime?
 
   // Follow up
@@ -2493,18 +2494,18 @@ model Referral {
   referred   User?   @relation("Referred", fields: [referredId], references: [id])
 
   // Referral details
-  code        String @unique
-  reward      Float?
-  rewardType  String // DISCOUNT, CASH, COURSE
-  status      String // PENDING, COMPLETED, PAID, EXPIRED
+  code       String @unique
+  reward     Float?
+  rewardType String // DISCOUNT, CASH, COURSE
+  status     String // PENDING, COMPLETED, PAID, EXPIRED
 
   // Conversion
-  convertedAt DateTime?
+  convertedAt     DateTime?
   conversionValue Float?
 
   // Payment
-  paidAt      DateTime?
-  paymentId   String?
+  paidAt    DateTime?
+  paymentId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2514,37 +2515,65 @@ model Referral {
 }
 
 // ==================================================
+// MESSAGING
+// ==================================================
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([senderId, receiverId])
+}
+
+// ==================================================
+// REPORTING
+// ==================================================
+
+model ReportedContent {
+  id          String  @id @default(cuid())
+  entityType  String
+  entityId    String
+  reason      String
+  description String?
+  status      String  @default("PENDING")
+
+  reportedBy   String
+  reporter     User   @relation("Reporter", fields: [reportedBy], references: [id])
+
+  moderatedBy  String?
+  moderator    User?  @relation("Moderator", fields: [moderatedBy], references: [id])
+  moderatedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([entityType, entityId])
+}
+
+// ==================================================
 // SYSTEM CONFIGURATION
 // ==================================================
 
 model SystemConfig {
-  id        String @id @default(cuid())
-  key       String @unique
-  value     Json
-  category  String
+  id          String  @id @default(cuid())
+  key         String  @unique
+  value       Json
+  category    String
   description String?
 
-  isPublic  Boolean @default(false)
+  isPublic Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

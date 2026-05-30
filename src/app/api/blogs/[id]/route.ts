@@ -18,14 +18,6 @@ export async function GET(
       "GUARDIAN",
     );
 
-    if (!auth.success) {
-      return sendResponse({
-        success: false,
-        message: auth.error || "Unauthorized",
-        status: auth.status || 401,
-      });
-    }
-
     const blog = await prisma.blog.findUnique({
       where: { id },
       include: {
@@ -41,7 +33,7 @@ export async function GET(
         },
         comments: {
           where:
-            auth.user?.role === "TEACHER"
+            auth.success && auth.user?.role === "TEACHER"
               ? {}
               : { isApproved: true },
           orderBy: { createdAt: "desc" },
@@ -64,7 +56,7 @@ export async function GET(
 
     // Check permissions
     if (
-      auth.user?.role === "TEACHER" &&
+      auth.success && auth.user?.role === "TEACHER" &&
       blog.teacherId !== auth.user.teacherId
     ) {
       return sendResponse({
@@ -77,7 +69,7 @@ export async function GET(
     // If not published, only teacher-owner can view
     if (
       !blog.isPublished &&
-      auth.user?.role !== "TEACHER"
+      (!auth.success || auth.user?.role !== "TEACHER")
     ) {
       return sendResponse({
         success: false,

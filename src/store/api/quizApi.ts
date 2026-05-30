@@ -192,7 +192,7 @@ export interface CreateQuestionData {
 export interface SubmitQuizData {
   answers: Array<{
     questionId: string;
-    selectedOption?: number;
+    selectedOption?: string;
     selectedValue?: any;
     matchedPairs?: any;
     text?: string;
@@ -520,7 +520,7 @@ export const quizApi = baseApi.injectEndpoints({
      * Start a quiz attempt
      */
     startQuizAttempt: builder.mutation<
-      { attemptId: string; timeLimit?: number; questions: any[] },
+      { success: boolean; data: { attemptId: string; timeLimit?: number; questions: any[] } },
       string
     >({
       query: (quizId) => ({
