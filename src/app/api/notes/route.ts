@@ -12,14 +12,6 @@ export async function GET(req: NextRequest) {
       "TEACHER", "STUDENT",
     );
 
-    if (!auth.success) {
-      return sendResponse({
-        success: false,
-        message: auth.error || "Unauthorized",
-        status: auth.status || 401,
-      });
-    }
-
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
@@ -55,22 +47,23 @@ export async function GET(req: NextRequest) {
     if (isPremium !== null) where.isPremium = isPremium === "true";
     if (tag) where.tags = { has: tag };
 
-    // If user is teacher, only show their notes
-    if (auth.user?.role === "TEACHER") {
-      where.teacherId = auth.user.teacherId;
-    }
-
-    // If user is student, only show public notes or notes from their batches
-    if (auth.user?.role === "STUDENT" && auth.user.studentId) {
+    // Apply role-based filters
+    if (auth.success) {
+      if (auth.user?.role === "TEACHER") {
+        where.teacherId = auth.user.teacherId;
+      } else if (auth.user?.role === "STUDENT" && auth.user.studentId) {
       const student = await prisma.student.findUnique({
         where: { id: auth.user.studentId },
         include: { enrollments: { select: { batchId: true } } },
       });
 
-      where.OR = [
-        { isPublic: true },
-        { batchId: { in: student?.enrollments.map((e) => e.batchId) || [] } },
-      ];
+        where.OR = [
+          { isPublic: true },
+          { batchId: { in: student?.enrollments.map((e) => e.batchId) || [] } },
+        ];
+      }
+    } else {
+      where.isPublic = true;
     }
 
     const [notes, total] = await Promise.all([

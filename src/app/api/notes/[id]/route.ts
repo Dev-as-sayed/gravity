@@ -17,14 +17,6 @@ export async function GET(
       "TEACHER", "STUDENT",
     );
 
-    if (!auth.success) {
-      return sendResponse({
-        success: false,
-        message: auth.error || "Unauthorized",
-        status: auth.status || 401,
-      });
-    }
-
     const note = await prisma.note.findUnique({
       where: { id },
       include: {
@@ -61,20 +53,18 @@ export async function GET(
       });
     }
 
-    // Check permissions
-    if (
-      auth.user?.role === "TEACHER" &&
-      note.teacherId !== auth.user.teacherId
-    ) {
-      return sendResponse({
-        success: false,
-        message: "You don't have permission to view this note",
-        status: 403,
-      });
-    }
-
-    // Check student access
-    if (auth.user?.role === "STUDENT" && !note.isPublic) {
+    // Public notes are accessible without authentication
+    if (note.isPublic) {
+      // Public notes — visible to everyone
+    } else if (auth.success && auth.user?.role === "TEACHER") {
+      if (note.teacherId !== auth.user.teacherId) {
+        return sendResponse({
+          success: false,
+          message: "You don't have permission to view this note",
+          status: 403,
+        });
+      }
+    } else if (auth.success && auth.user?.role === "STUDENT") {
       if (note.batchId && auth.user.studentId) {
         const enrollment = await prisma.enrollment.findFirst({
           where: {
@@ -97,6 +87,12 @@ export async function GET(
           status: 403,
         });
       }
+    } else {
+      return sendResponse({
+        success: false,
+        message: "Note not found",
+        status: 404,
+      });
     }
 
     // Increment view count
